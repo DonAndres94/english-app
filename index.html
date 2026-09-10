@@ -27,7 +27,7 @@
 
         .app-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -109,7 +109,7 @@
             text-align: left;
             padding: 10px;
             border-bottom: 1px solid #EEE;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         th { background-color: #F8F9F9; }
@@ -129,10 +129,10 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .card-box {
@@ -348,32 +348,34 @@
                     <div class="value" id="statProgress">0%</div>
                 </div>
             </div>
+            <br>
+            <button class="action-btn" style="background: var(--danger); border-color: var(--danger); color: white;" onclick="resetStatsData()">🗑️ Reset Statistics</button>
         </div>
     </div>
 </div>
 
 <script>
 const dictionaryData = [
-    { day: 1, category: "Obiettivi e Successo", en: "Accomplish", fig: "a-kóm-plish", it: "Realizzare / Portare a termine", sentence: "We need to ___ our main project goals this year." },
-    { day: 1, category: "Finanze e Gestione", en: "Afford", fig: "a-fóord", it: "Permettersi (economicamente)", sentence: "I cannot ___ to buy a brand new car right now." },
-    { day: 1, category: "Azioni e Decisioni", en: "Avoid", fig: "a-vóid", it: "Evitare", sentence: "Try to ___ making careless mistakes in your writing." },
-    { day: 1, category: "Crescita Personale", en: "Improve", fig: "im-prúuv", it: "Migliorare", sentence: "She practices every day to ___ her English fluency." },
-    { day: 1, category: "Finanze e Gestione", en: "Handle", fig: "hæn-dl", it: "Gestire / Maneggiare", sentence: "An experienced manager knows how to ___ high pressure." },
-    { day: 1, category: "Obiettivi e Successo", en: "Achieve", fig: "a-chíiv", it: "Raggiungere / Riuscire", sentence: "Hard work helps you ___ long term success." },
-    { day: 1, category: "Crescita Personale", en: "Acknowledge", fig: "ak-nó-lij", it: "Riconoscere / Ammettere", sentence: "It is important to ___ your own mistakes." },
-    { day: 1, category: "Crescita Personale", en: "Acquire", fig: "a-kuái-ar", it: "Acquisire", sentence: "Children ___ new languages very quickly." },
-    { day: 1, category: "Crescita Personale", en: "Adapt", fig: "a-dápt", it: "Adattarsi", sentence: "Species must ___ to survive climate changes." },
-    { day: 1, category: "Azioni e Decisioni", en: "Address", fig: "a-drés", it: "Affrontare (un problema)", sentence: "We need to ___ this urgent problem immediately." },
-    { day: 1, category: "Azioni e Decisioni", en: "Challenge", fig: "chæ-lenj", it: "Sfida / Sfidare", sentence: "Learning a new skill is always a great ___." },
-    { day: 1, category: "Obiettivi e Successo", en: "Commitment", fig: "ko-mít-ment", it: "Impegno", sentence: "Success requires daily discipline and total ___." },
-    { day: 1, category: "Crescita Personale", en: "Curiosity", fig: "kiu-ri-ó-si-ti", it: "Curiosità", sentence: "Good students always show strong ___." },
-    { day: 1, category: "Obiettivi e Successo", en: "Dedication", fig: "de-di-kéi-shon", it: "Dedizione", sentence: "Her absolute ___ resulted in a promotion." },
-    { day: 1, category: "Azioni e Decisioni", en: "Determine", fig: "di-tér-min", it: "Determinare / Stabilire", sentence: "We must ___ the best course of action." },
-    { day: 1, category: "Crescita Personale", en: "Encourage", fig: "in-kó-rij", it: "Incoraggiare", sentence: "Good teachers ___ students to ask questions." },
-    { day: 1, category: "Azioni e Decisioni", en: "Establish", fig: "es-tæ-blish", it: "Stabilire / Fondare", sentence: "The company aims to ___ new international markets." },
-    { day: 1, category: "Crescita Personale", en: "Evaluate", fig: "i-væ-lu-eit", it: "Valutare", sentence: "Managers ___ employee performance every year." },
-    { day: 1, category: "Crescita Personale", en: "Expand", fig: "eks-pænd", it: "Espandere / Ampliare", sentence: "The business plans to ___ its operations abroad." },
-    { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", sentence: "New software tools can ___ remote collaboration." }
+    { day: 1, category: "Obiettivi e Successo", en: "Accomplish", fig: "a-kóm-plish", it: "Realizzare / Portare a termine", es: "Lograr / Cumplir", da: "Opnå / Udrette", sentence: "We need to ___ our main project goals this year." },
+    { day: 1, category: "Finanze e Gestione", en: "Afford", fig: "a-fóord", it: "Permettersi (economicamente)", es: "Permitirse / Costear", da: "Ha råd til", sentence: "I cannot ___ to buy a brand new car right now." },
+    { day: 1, category: "Azioni e Decisioni", en: "Avoid", fig: "a-vóid", it: "Evitare", es: "Evitar", da: "Undgå", sentence: "Try to ___ making careless mistakes in your writing." },
+    { day: 1, category: "Crescita Personale", en: "Improve", fig: "im-prúuv", it: "Migliorare", es: "Mejorar", da: "Forbedre", sentence: "She practices every day to ___ her English fluency." },
+    { day: 1, category: "Finanze e Gestione", en: "Handle", fig: "hæn-dl", it: "Gestire / Maneggiare", es: "Manejar / Gestionar", da: "Håndtere", sentence: "An experienced manager knows how to ___ high pressure." },
+    { day: 1, category: "Obiettivi e Successo", en: "Achieve", fig: "a-chíiv", it: "Raggiungere / Riuscire", es: "Alcanzar / Lograr", da: "Opnå / Nå", sentence: "Hard work helps you ___ long term success." },
+    { day: 1, category: "Crescita Personale", en: "Acknowledge", fig: "ak-nó-lij", it: "Riconoscere / Ammettere", es: "Reconocer", da: "Erkende", sentence: "It is important to ___ your own mistakes." },
+    { day: 1, category: "Crescita Personale", en: "Acquire", fig: "a-kuái-ar", it: "Acquisire", es: "Adquirir", da: "Erhverve", sentence: "Children ___ new languages very quickly." },
+    { day: 1, category: "Crescita Personale", en: "Adapt", fig: "a-dápt", it: "Adattarsi", es: "Adaptarse", da: "Tilpasse sig", sentence: "Species must ___ to survive climate changes." },
+    { day: 1, category: "Azioni e Decisioni", en: "Address", fig: "a-drés", it: "Affrontare (un problema)", es: "Abordar", da: "Adressere / Håndtere", sentence: "We need to ___ this urgent problem immediately." },
+    { day: 1, category: "Azioni e Decisioni", en: "Challenge", fig: "chæ-lenj", it: "Sfida / Sfidare", es: "Desafío / Reto", da: "Udfordring", sentence: "Learning a new skill is always a great ___." },
+    { day: 1, category: "Obiettivi e Successo", en: "Commitment", fig: "ko-mít-ment", it: "Impegno", es: "Compromiso", da: "Forpligtelse", sentence: "Success requires daily discipline and total ___." },
+    { day: 1, category: "Crescita Personale", en: "Curiosity", fig: "kiu-ri-ó-si-ti", it: "Curiosità", es: "Curiosidad", da: "Nysgerrighed", sentence: "Good students always show strong ___." },
+    { day: 1, category: "Obiettivi e Successo", en: "Dedication", fig: "de-di-kéi-shon", it: "Dedizione", es: "Dedicación", da: "Dedikation", sentence: "Her absolute ___ resulted in a promotion." },
+    { day: 1, category: "Azioni e Decisioni", en: "Determine", fig: "di-tér-min", it: "Determinare / Stabilire", es: "Determinar", da: "Bestemme", sentence: "We must ___ the best course of action." },
+    { day: 1, category: "Crescita Personale", en: "Encourage", fig: "in-kó-rij", it: "Incoraggiare", es: "Fomentar / Alentar", da: "Opmuntre", sentence: "Good teachers ___ students to ask questions." },
+    { day: 1, category: "Azioni e Decisioni", en: "Establish", fig: "es-tæ-blish", it: "Stabilire / Fondare", es: "Establecer", da: "Etablere", sentence: "The company aims to ___ new international markets." },
+    { day: 1, category: "Crescita Personale", en: "Evaluate", fig: "i-væ-lu-eit", it: "Valutare", es: "Evaluar", da: "Evaluere", sentence: "Managers ___ employee performance every year." },
+    { day: 1, category: "Crescita Personale", en: "Expand", fig: "eks-pænd", it: "Espandere / Ampliare", es: "Expandir", da: "Udvide", sentence: "The business plans to ___ its operations abroad." },
+    { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere", sentence: "New software tools can ___ remote collaboration." }
 ];
 
 const listeningDatabase = {
@@ -397,11 +399,11 @@ const listeningDatabase = {
     ]
 };
 
-// Variabili per la gestione dello stato di Writing
+// Variabili di stato con persistenza su localStorage
 let practiceQueue = [];
 let totalSessionTarget = 20;
 let sessionCompletedCount = 0;
-let globalCompletedCount = 0;
+let globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
 let currentWritingType = 1;
 let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
@@ -424,10 +426,8 @@ function restartWritingSession() {
 
     sessionCompletedCount = 0;
     
-    // Crea una copia del dizionario e mescolala
     let shuffled = [...dictionaryData].sort(() => Math.random() - 0.5);
     
-    // Taglia in base al numero di quesiti scelti (se ci sono abbastanza parole)
     if (shuffled.length > totalSessionTarget) {
         practiceQueue = shuffled.slice(0, totalSessionTarget);
     } else {
@@ -452,12 +452,14 @@ function initCategorySelect() {
 
 function loadDailyCards() {
     const words = dictionaryData.filter(w => w.day === 1);
-    let html = `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th></tr></thead><tbody>`;
+    let html = `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Español</th><th>🇩🇰 Dansk</th></tr></thead><tbody>`;
     words.forEach(w => {
         html += `<tr>
             <td><strong>${w.en}</strong> <button class="audio-btn" onclick="speak('${w.en}')">🔊</button></td>
             <td><em>${w.fig}</em></td>
             <td>${w.it}</td>
+            <td>${w.es}</td>
+            <td>${w.da}</td>
         </tr>`;
     });
     html += `</tbody></table>`;
@@ -486,12 +488,14 @@ function renderRepository(words) {
     let html = "";
     for (const [category, catWords] of Object.entries(grouped)) {
         html += `<div class="category-title">📂 ${category}</div>`;
-        html += `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>Day</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Español</th><th>🇩🇰 Dansk</th><th>Day</th></tr></thead><tbody>`;
         catWords.forEach(w => {
             html += `<tr>
                 <td><strong>${w.en}</strong> <button class="audio-btn" onclick="speak('${w.en}')">🔊</button></td>
                 <td><em>${w.fig}</em></td>
                 <td>${w.it}</td>
+                <td>${w.es}</td>
+                <td>${w.da}</td>
                 <td>Day ${w.day}</td>
             </tr>`;
         });
@@ -507,7 +511,9 @@ function filterRepository() {
     const filtered = dictionaryData.filter(w => {
         const matchesSearch = search === "" || 
             w.en.toLowerCase().includes(search) || 
-            w.it.toLowerCase().includes(search);
+            w.it.toLowerCase().includes(search) ||
+            w.es.toLowerCase().includes(search) ||
+            w.da.toLowerCase().includes(search);
 
         const matchesCategory = selectedCategory === "" || w.category === selectedCategory;
         return matchesSearch && matchesCategory;
@@ -528,7 +534,6 @@ function switchTab(tabId, event) {
     event.target.classList.add('active');
 
     if (tabId === 'writing') {
-        // Se la sessione è completata o vuota all'apertura, riavvia
         if (practiceQueue.length === 0 && sessionCompletedCount >= totalSessionTarget) {
             restartWritingSession();
         } else {
@@ -542,7 +547,6 @@ function switchTab(tabId, event) {
 function generateWritingExercise() {
     const area = document.getElementById('writingArea');
     
-    // Se la sessione corrente è terminata
     if (practiceQueue.length === 0) {
         area.innerHTML = `
             <h3>🎉 Session Completed!</h3>
@@ -606,6 +610,11 @@ function generateWritingExercise() {
     }
 }
 
+function incrementCompletedCount() {
+    globalCompletedCount++;
+    localStorage.setItem('eng_completed_count', globalCompletedCount);
+}
+
 function checkWritingAnswer() {
     const inputField = document.getElementById('writingInput');
     const input = inputField.value.trim().toLowerCase();
@@ -614,7 +623,7 @@ function checkWritingAnswer() {
     if (input === currentWritingData.en.toLowerCase()) {
         practiceQueue.shift();
         sessionCompletedCount++;
-        globalCompletedCount++;
+        incrementCompletedCount();
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 Loading next...</strong>";
         setTimeout(generateWritingExercise, 1000);
     } else {
@@ -632,7 +641,7 @@ function checkMatchingAnswer(btn, selected) {
         btn.classList.add('correct');
         practiceQueue.shift();
         sessionCompletedCount++;
-        globalCompletedCount++;
+        incrementCompletedCount();
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct match! 🎉 Loading next...</strong>";
         setTimeout(generateWritingExercise, 1000);
     } else {
@@ -696,7 +705,7 @@ function checkListeningAnswers() {
 
     if(correct) {
         feedback.innerHTML = "<strong style='color:var(--success)'>All sentences are correct! Great job! 🎉</strong>";
-        globalCompletedCount++;
+        incrementCompletedCount();
     } else {
         feedback.innerHTML = "<span style='color:var(--danger)'>Some highlighted fields have errors. Listen again and try!</span>";
     }
@@ -710,6 +719,15 @@ function updateStatsDisplay() {
     
     let progress = Math.round((sessionCompletedCount / totalSessionTarget) * 100) || 0;
     document.getElementById('statProgress').innerText = progress + "%";
+}
+
+function resetStatsData() {
+    if (confirm("Are you sure you want to reset your completed statistics?")) {
+        globalCompletedCount = 0;
+        localStorage.removeItem('eng_completed_count');
+        updateStatsDisplay();
+        alert("Statistics have been reset.");
+    }
 }
 
 initApp();
