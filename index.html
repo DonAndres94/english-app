@@ -315,12 +315,12 @@
         </div>
     </div>
 
-    <!-- TAB 3: LISTENING (CON CATEGORIE E MULTI-FRASE) -->
+    <!-- TAB 3: LISTENING (CON CATEGORIE E CAMBIO VIDEO) -->
     <div id="listening" class="tab-content">
         <div class="card-box">
-            <h3>🎧 Ascolto Guidato (YouTube)</h3>
+            <h3>🎧 Ascolto Guidato da YouTube</h3>
             <div class="controls" style="margin-top: 15px;">
-                <label for="listeningCategorySelect"><strong>Scegli Categoria:</strong></label>
+                <label for="listeningCategorySelect"><strong>Categoria:</strong></label>
                 <select id="listeningCategorySelect" onchange="changeListeningCategory()">
                     <option value="music">🎵 Music</option>
                     <option value="documentary">🌍 Documentary</option>
@@ -332,14 +332,14 @@
                 <!-- Video inserito dinamicamente -->
             </div>
 
-            <p style="text-align: left; font-weight: bold; color: #555;">Completa le parole mancanti frase per frase:</p>
+            <p style="text-align: left; font-weight: bold; color: #555;">Completa le parole mancanti ascoltando:</p>
             <div id="listeningSentencesContainer">
-                <!-- Frasi multiple con input generate dinamicamente -->
+                <!-- Frasi multiple con input -->
             </div>
 
-            <button class="action-btn" onclick="checkListeningAnswers()">Verifica Tutte le Frasi</button>
+            <button class="action-btn" onclick="checkListeningAnswers()">Verifica Risposte</button>
             <br><br>
-            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="loadListeningExercise()">Ricarica Esercizio</button>
+            <button class="action-btn" style="background:#27AE60; border-color:#27AE60; color:white;" onclick="nextVideoInCategory()">🔄 Cambia Video in questa Categoria</button>
             <p id="listeningFeedback"></p>
         </div>
     </div>
@@ -385,37 +385,62 @@ const dictionaryData = [
     { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere" }
 ];
 
-// Database dei video suddiviso per le 3 sezioni con frasi multiple strutturate
+// Database strutturato con più video reali per ciascuna delle 3 categorie
 const listeningDatabase = {
-    music: {
-        videoId: "kJQP7kiw5Fk", // Esempio: Brano musicale famoso
-        lines: [
-            "We have to <input class='blank-input' data-ans='improve'> our rhythm every single day.",
-            "You cannot <input class='blank-input' data-ans='avoid'> the truth when the music plays.",
-            "We will <input class='blank-input' data-ans='achieve'> greatness through our song."
-        ]
-    },
-    documentary: {
-        videoId: "J---aiyznGQ", // Esempio: National Geographic / Documentario natura
-        lines: [
-            "Wildlife must <input class='blank-input' data-ans='adapt'> to survive changing climates.",
-            "Researchers try to <input class='blank-input' data-ans='acquire'> accurate data from the field.",
-            "We must <input class='blank-input' data-ans='address'> environmental challenges immediately."
-        ]
-    },
-    podcast: {
-        videoId: "5qap5aO4i9A", // Esempio: TED Talk / Podcast in inglese
-        lines: [
-            "Successful leaders know how to <input class='blank-input' data-ans='handle'> high pressure.",
-            "It takes strong <input class='blank-input' data-ans='commitment'> to build a new enterprise.",
-            "We need to <input class='blank-input' data-ans='establish'> clear goals for our future."
-        ]
-    }
+    music: [
+        {
+            videoId: "fJ9rUzIMcZQ", // Esempio: Brano musicale pop con testo
+            lines: [
+                "We have to <input class='blank-input' data-ans='improve'> our rhythm every single day.",
+                "You cannot <input class='blank-input' data-ans='avoid'> the truth when the music plays."
+            ]
+        },
+        {
+            videoId: "kJQP7kiw5Fk", // Altro brano musicale famoso
+            lines: [
+                "We will <input class='blank-input' data-ans='achieve'> greatness through our song.",
+                "It takes deep <input class='blank-input' data-ans='commitment'> to keep singing."
+            ]
+        }
+    ],
+    documentary: [
+        {
+            videoId: "J---aiyznGQ", // Documentario / Natura (National Geographic style)
+            lines: [
+                "Wildlife must <input class='blank-input' data-ans='adapt'> to survive changing climates.",
+                "Researchers try to <input class='blank-input' data-ans='acquire'> accurate data from nature."
+            ]
+        },
+        {
+            videoId: "C0DPdy98e4c", // Documentario scientifico o geografico
+            lines: [
+                "We must <input class='blank-input' data-ans='address'> environmental challenges immediately.",
+                "Scientists work to <input class='blank-input' data-ans='establish'> new ecological reserves."
+            ]
+        }
+    ],
+    podcast: [
+        {
+            videoId: "5qap5aO4i9A", // TED Talk / Podcast di crescita personale
+            lines: [
+                "Successful leaders know how to <input class='blank-input' data-ans='handle'> high pressure.",
+                "We need to <input class='blank-input' data-ans='determine'> our priorities carefully."
+            ]
+        },
+        {
+            videoId: "R_fZjGm2OrM", // Intervista / Podcast motivazionale
+            lines: [
+                "You must <input class='blank-input' data-ans='accomplish'> your daily targets.",
+                "It takes true <input class='blank-input' data-ans='dedication'> to build a successful career."
+            ]
+        }
+    ]
 };
 
 let score = 0;
 let currentWritingWord = null;
 let currentQuizWord = null;
+let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
 
 document.getElementById('statTotal').innerText = dictionaryData.length;
 
@@ -539,19 +564,21 @@ function checkWritingAnswer() {
     }
 }
 
-// Gestione ascolto con le 3 sezioni e frasi multiple
+// Gestione avanzata del Listening con cambio video
 function loadListeningExercise() {
     const category = document.getElementById('listeningCategorySelect').value;
-    const data = listeningDatabase[category];
+    const videoList = listeningDatabase[category];
+    const currentIndex = currentVideoIndexes[category];
+    const currentEx = videoList[currentIndex];
 
-    // Inserisce il video corrispondente
+    // Inserisce il video YouTube attivo
     document.getElementById('youtubeContainer').innerHTML = `
-        <iframe src="https://www.youtube.com/embed/${data.videoId}" allowfullscreen></iframe>
+        <iframe src="https://www.youtube.com/embed/${currentEx.videoId}" allowfullscreen></iframe>
     `;
 
-    // Inserisce le frasi multiple con i campi di input
+    // Inserisce le frasi con i campi di input
     let linesHtml = "";
-    data.lines.forEach((line, index) => {
+    currentEx.lines.forEach((line, index) => {
         linesHtml += `<div class="listening-line"><strong>Frase ${index + 1}:</strong> ${line}</div>`;
     });
     document.getElementById('listeningSentencesContainer').innerHTML = linesHtml;
@@ -559,6 +586,15 @@ function loadListeningExercise() {
 }
 
 function changeListeningCategory() {
+    loadListeningExercise();
+}
+
+function nextVideoInCategory() {
+    const category = document.getElementById('listeningCategorySelect').value;
+    const videoList = listeningDatabase[category];
+    
+    // Passa al video successivo in modo ciclico
+    currentVideoIndexes[category] = (currentVideoIndexes[category] + 1) % videoList.length;
     loadListeningExercise();
 }
 
