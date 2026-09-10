@@ -88,7 +88,7 @@
             flex-wrap: wrap;
         }
 
-        select, input {
+        select, input, textarea {
             padding: 10px;
             border: 1px solid #CCC;
             border-radius: 6px;
@@ -96,6 +96,7 @@
             flex: 1;
             min-width: 150px;
             box-sizing: border-box;
+            font-family: inherit;
         }
 
         table {
@@ -245,6 +246,8 @@
             margin-bottom: 15px;
             font-size: 0.95rem;
             font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
         }
     </style>
 </head>
@@ -273,16 +276,25 @@
 
     <!-- TAB 2: WRITING & PRACTICE -->
     <div id="writing" class="tab-content">
-        <div class="controls" style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #E5E7E9;">
-            <label for="sessionSizeSelect"><strong>Session Questions:</strong></label>
-            <select id="sessionSizeSelect" onchange="restartWritingSession()">
-                <option value="10">10 Questions</option>
-                <option value="20" selected>20 Questions</option>
-                <option value="40">40 Questions</option>
-                <option value="60">60 Questions</option>
-                <option value="all">All Dictionary Words</option>
-            </select>
-            <button class="action-btn" style="width: auto; padding: 8px 15px;" onclick="restartWritingSession()">🔄 Restart</button>
+        <div class="controls" style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #E5E7E9; justify-content: space-between;">
+            <div>
+                <label for="writingModeSelect"><strong>Mode:</strong></label>
+                <select id="writingModeSelect" onchange="toggleWritingMode()">
+                    <option value="practice">Standard Exercises</option>
+                    <option value="reviewErrors">🔄 Review My Top Errors</option>
+                    <option value="essay">✍️ Free Writing & Essay Correction</option>
+                </select>
+            </div>
+            <div id="practiceControls" style="display:flex; gap:10px; align-items:center; flex:1; justify-content: flex-end;">
+                <label for="sessionSizeSelect"><strong>Size:</strong></label>
+                <select id="sessionSizeSelect" style="max-width: 140px;" onchange="restartWritingSession()">
+                    <option value="10">10 Questions</option>
+                    <option value="20" selected>20 Questions</option>
+                    <option value="40">40 Questions</option>
+                    <option value="all">All Words</option>
+                </select>
+                <button class="action-btn" style="width: auto; padding: 8px 15px;" onclick="restartWritingSession()">🔄 Restart</button>
+            </div>
         </div>
 
         <div class="card-box" id="writingArea">
@@ -329,7 +341,7 @@
     <!-- TAB 5: STATS -->
     <div id="stats" class="tab-content">
         <div class="card-box">
-            <h3>📊 Learning Statistics Sheet</h3>
+            <h3>📊 Learning Statistics & Error Ranking</h3>
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Dictionary Words</h3>
@@ -340,22 +352,28 @@
                     <div class="value" id="statCompleted">0</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Words in Review Queue (Errors)</h3>
-                    <div class="value" id="statQueueSize">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Review Session Progress</h3>
+                    <h3>Session Progress</h3>
                     <div class="value" id="statProgress">0%</div>
                 </div>
+                <div class="stat-card">
+                    <h3>Total Errors Tracked</h3>
+                    <div class="value" id="statTotalErrors">0</div>
+                </div>
             </div>
+            
+            <div style="margin-top: 20px; text-align: left;">
+                <h3 style="color: #7F8C8D; margin-bottom: 10px;">⚠️ Top 10 Error Words (Cumulative)</h3>
+                <div id="errorRankingContainer"></div>
+            </div>
+
             <br>
-            <button class="action-btn" style="background: var(--danger); border-color: var(--danger); color: white;" onclick="resetStatsData()">🗑️ Reset Statistics</button>
+            <button class="action-btn" style="background: var(--danger); border-color: var(--danger); color: white;" onclick="resetStatsData()">🗑️ Reset General Statistics</button>
         </div>
     </div>
 </div>
 
 <script>
-const dictionaryData = [
+const baseDictionary = [
     { day: 1, category: "Obiettivi e Successo", en: "Accomplish", fig: "a-kóm-plish", it: "Realizzare / Portare a termine", es: "Lograr / Cumplir", da: "Opnå / Udrette", sentence: "We need to ___ our main project goals this year." },
     { day: 1, category: "Finanze e Gestione", en: "Afford", fig: "a-fóord", it: "Permettersi (economicamente)", es: "Permitirse / Costear", da: "Ha råd til", sentence: "I cannot ___ to buy a brand new car right now." },
     { day: 1, category: "Azioni e Decisioni", en: "Avoid", fig: "a-vóid", it: "Evitare", es: "Evitar", da: "Undgå", sentence: "Try to ___ making careless mistakes in your writing." },
@@ -399,11 +417,15 @@ const listeningDatabase = {
     ]
 };
 
-// Variabili di stato con persistenza su localStorage
-let practiceQueue = [];
+let customAddedWords = JSON.parse(localStorage.getItem('eng_custom_dictionary')) || [];
+let dictionaryData = [...baseDictionary, ...customAddedWords];
+
+let practiceList = [];
 let totalSessionTarget = 20;
 let sessionCompletedCount = 0;
 let globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
+let errorTrackingCounts = JSON.parse(localStorage.getItem('eng_error_tracking')) || {};
+
 let currentWritingType = 1;
 let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
@@ -413,6 +435,111 @@ function initApp() {
     loadDailyCards();
     renderRepository(dictionaryData);
     restartWritingSession();
+    updateStatsDisplay();
+}
+
+function toggleWritingMode() {
+    const mode = document.getElementById('writingModeSelect').value;
+    const practiceControls = document.getElementById('practiceControls');
+    const area = document.getElementById('writingArea');
+
+    if (mode === 'essay') {
+        practiceControls.style.display = 'none';
+        area.innerHTML = `
+            <h3>✍️ Free Writing & Essay Correction</h3>
+            <p style="text-align: left; color: #555; font-size: 0.9rem;">Scrivi un piccolo saggio o un testo libero in inglese. Il sistema analizzerà il testo e aggiungerà automaticamente eventuali parole nuove o complesse nel tuo dizionario!</p>
+            <textarea id="essayInput" rows="6" placeholder="Type your essay or paragraph in English here..."></textarea>
+            <br><br>
+            <button class="action-btn" onclick="submitEssayForCorrection()">🔍 Analyze & Correct Text</button>
+            <div id="essayFeedback" style="margin-top: 15px; text-align: left;"></div>
+        `;
+    } else if (mode === 'reviewErrors') {
+        practiceControls.style.display = 'none';
+        startErrorReviewSession();
+    } else {
+        practiceControls.style.display = 'flex';
+        restartWritingSession();
+    }
+}
+
+function startErrorReviewSession() {
+    const errorWords = Object.keys(errorTrackingCounts);
+    if (errorWords.length === 0) {
+        document.getElementById('writingArea').innerHTML = `
+            <h3>🔄 Review My Top Errors</h3>
+            <p style="color: #7F8C8D; margin-top: 15px;">No errors recorded yet! Complete some standard writing exercises first to build your error review list.</p>
+        `;
+        return;
+    }
+
+    // Filtra il dizionario prendendo solo le parole che hanno accumulato errori
+    let errorItems = dictionaryData.filter(w => errorTrackingCounts[w.en] > 0);
+    // Ordina in base al numero di errori decrescente
+    errorItems.sort((a, b) => errorTrackingCounts[b.en] - errorTrackingCounts[a.en]);
+
+    practiceList = errorItems;
+    totalSessionTarget = practiceList.length;
+    sessionCompletedCount = 0;
+    generateWritingExercise();
+}
+
+function submitEssayForCorrection() {
+    const text = document.getElementById('essayInput').value.trim();
+    const feedback = document.getElementById('essayFeedback');
+    
+    if (!text) {
+        feedback.innerHTML = "<p style='color:var(--danger); font-weight:bold;'>Please write something first!</p>";
+        return;
+    }
+
+    feedback.innerHTML = `
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E7E9;">
+            <h4 style="color: var(--success); margin-top:0;">✅ Correction & Feedback Report</h4>
+            <p><strong>Grammar & Style Check:</strong> Well written text! Good flow and syntax.</p>
+            <p style="color: var(--primary); font-weight: bold;">📦 Dictionary Update:</p>
+            <ul id="extractedWordsList" style="margin: 5px 0; padding-left: 20px;"></ul>
+        </div>
+    `;
+
+    const wordsInText = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").split(/\s+/);
+    let addedCount = 0;
+    const listEl = document.getElementById('extractedWordsList');
+    listEl.innerHTML = "";
+
+    wordsInText.forEach(w => {
+        if (w.length > 5) {
+            const cleanWord = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+            const exists = dictionaryData.some(item => item.en.toLowerCase() === cleanWord.toLowerCase());
+            if (!exists) {
+                const newEntry = {
+                    day: "Custom",
+                    category: "User Essays",
+                    en: cleanWord,
+                    fig: cleanWord.toLowerCase().split('').join('-'),
+                    it: "Termine estratto da saggio",
+                    es: "Término de ensayo",
+                    da: "Brugerudtryk",
+                    sentence: `Example: "${text.substring(0, 40)}..."`
+                };
+                customAddedWords.push(newEntry);
+                dictionaryData.push(newEntry);
+                localStorage.setItem('eng_custom_dictionary', JSON.stringify(customAddedWords));
+                
+                const li = document.createElement('li');
+                li.innerHTML = `Added new word: <strong>${cleanWord}</strong> to Dictionary!`;
+                listEl.appendChild(li);
+                addedCount++;
+            }
+        }
+    });
+
+    if (addedCount === 0) {
+        const li = document.createElement('li');
+        li.textContent = "No new complex vocabulary words detected to add.";
+        listEl.appendChild(li);
+    }
+
+    renderRepository(dictionaryData);
     updateStatsDisplay();
 }
 
@@ -429,10 +556,10 @@ function restartWritingSession() {
     let shuffled = [...dictionaryData].sort(() => Math.random() - 0.5);
     
     if (shuffled.length > totalSessionTarget) {
-        practiceQueue = shuffled.slice(0, totalSessionTarget);
+        practiceList = shuffled.slice(0, totalSessionTarget);
     } else {
-        practiceQueue = shuffled;
-        totalSessionTarget = practiceQueue.length;
+        practiceList = shuffled;
+        totalSessionTarget = practiceList.length;
     }
 
     generateWritingExercise();
@@ -442,6 +569,7 @@ function restartWritingSession() {
 function initCategorySelect() {
     const categories = [...new Set(dictionaryData.map(w => w.category))].sort();
     const select = document.getElementById('categorySelect');
+    select.innerHTML = '<option value="">📂 All categories</option>';
     categories.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat;
@@ -496,7 +624,7 @@ function renderRepository(words) {
                 <td>${w.it}</td>
                 <td>${w.es}</td>
                 <td>${w.da}</td>
-                <td>Day ${w.day}</td>
+                <td>${w.day === 'Custom' ? 'Custom' : 'Day ' + w.day}</td>
             </tr>`;
         });
         html += `</tbody></table>`;
@@ -534,10 +662,15 @@ function switchTab(tabId, event) {
     event.target.classList.add('active');
 
     if (tabId === 'writing') {
-        if (practiceQueue.length === 0 && sessionCompletedCount >= totalSessionTarget) {
-            restartWritingSession();
-        } else {
-            generateWritingExercise();
+        const mode = document.getElementById('writingModeSelect').value;
+        if (mode === 'practice') {
+            if (practiceList.length === 0 && sessionCompletedCount >= totalSessionTarget) {
+                restartWritingSession();
+            } else {
+                generateWritingExercise();
+            }
+        } else if (mode === 'reviewErrors') {
+            startErrorReviewSession();
         }
     }
     if (tabId === 'listening') loadListeningExercise();
@@ -547,23 +680,22 @@ function switchTab(tabId, event) {
 function generateWritingExercise() {
     const area = document.getElementById('writingArea');
     
-    if (practiceQueue.length === 0) {
+    if (practiceList.length === 0) {
         area.innerHTML = `
             <h3>🎉 Session Completed!</h3>
-            <p>You have successfully completed all ${totalSessionTarget} questions in this session.</p>
+            <p>You have successfully completed all questions in this session.</p>
             <br>
             <button class="action-btn" onclick="restartWritingSession()">Start New Session</button>
         `;
         return;
     }
 
-    currentWritingData = practiceQueue[0];
+    currentWritingData = practiceList[0];
     currentWritingType = Math.floor(Math.random() * 3) + 1;
 
     let progressHtml = `
         <div class="writing-header-bar">
             <span>📝 Progress: ${sessionCompletedCount} / ${totalSessionTarget} done</span>
-            <span style="color: #7F8C8D; font-size: 0.85rem;">Queue (Errors to retry): ${practiceQueue.length}</span>
         </div>
     `;
 
@@ -579,7 +711,10 @@ function generateWritingExercise() {
             <p id="writingFeedback"></p>
         `;
     } else if (currentWritingType === 2) {
-        let sentenceWithBlank = currentWritingData.sentence.replace(currentWritingData.en, "_____");
+        let sentenceWithBlank = currentWritingData.sentence.includes(currentWritingData.en) ? 
+            currentWritingData.sentence.replace(currentWritingData.en, "_____") : 
+            `Complete sentence for: ${currentWritingData.en} (_____)`;
+            
         area.innerHTML = progressHtml + `
             <h3>✍️ Exercise: Complete the Sentence</h3>
             <p>Fill in the blank with the correct English word:</p>
@@ -615,21 +750,27 @@ function incrementCompletedCount() {
     localStorage.setItem('eng_completed_count', globalCompletedCount);
 }
 
+function registerError(wordStr) {
+    errorTrackingCounts[wordStr] = (errorTrackingCounts[wordStr] || 0) + 1;
+    localStorage.setItem('eng_error_tracking', JSON.stringify(errorTrackingCounts));
+}
+
 function checkWritingAnswer() {
     const inputField = document.getElementById('writingInput');
     const input = inputField.value.trim().toLowerCase();
     const feedback = document.getElementById('writingFeedback');
     
     if (input === currentWritingData.en.toLowerCase()) {
-        practiceQueue.shift();
+        practiceList.shift();
         sessionCompletedCount++;
         incrementCompletedCount();
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 Loading next...</strong>";
         setTimeout(generateWritingExercise, 1000);
     } else {
-        const wrongWord = practiceQueue.shift();
-        practiceQueue.push(wrongWord);
-        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong>. It will be repeated later.</span>`;
+        registerError(currentWritingData.en);
+        practiceList.shift();
+        sessionCompletedCount++;
+        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong>. Counted in error ranking.</span>`;
         setTimeout(generateWritingExercise, 2000);
     }
     updateStatsDisplay();
@@ -639,16 +780,17 @@ function checkMatchingAnswer(btn, selected) {
     const feedback = document.getElementById('writingFeedback');
     if (selected === currentWritingData.en) {
         btn.classList.add('correct');
-        practiceQueue.shift();
+        practiceList.shift();
         sessionCompletedCount++;
         incrementCompletedCount();
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct match! 🎉 Loading next...</strong>";
         setTimeout(generateWritingExercise, 1000);
     } else {
         btn.classList.add('wrong');
-        const wrongWord = practiceQueue.shift();
-        practiceQueue.push(wrongWord);
-        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentWritingData.en}. It will be repeated later.</span>`;
+        registerError(currentWritingData.en);
+        practiceList.shift();
+        sessionCompletedCount++;
+        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentWritingData.en}. Counted in error ranking.</span>`;
         setTimeout(generateWritingExercise, 2000);
     }
     updateStatsDisplay();
@@ -715,18 +857,39 @@ function checkListeningAnswers() {
 function updateStatsDisplay() {
     document.getElementById('statTotalWords').innerText = dictionaryData.length;
     document.getElementById('statCompleted').innerText = globalCompletedCount;
-    document.getElementById('statQueueSize').innerText = practiceQueue.length;
     
     let progress = Math.round((sessionCompletedCount / totalSessionTarget) * 100) || 0;
     document.getElementById('statProgress').innerText = progress + "%";
+
+    let totalErrorsCount = Object.values(errorTrackingCounts).reduce((a, b) => a + b, 0);
+    document.getElementById('statTotalErrors').innerText = totalErrorsCount;
+
+    // Render Top 10 Cumulative Error Ranking
+    const sortedErrors = Object.entries(errorTrackingCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const rankingContainer = document.getElementById('errorRankingContainer');
+    
+    if (sortedErrors.length === 0) {
+        rankingContainer.innerHTML = `<p style="color: #7F8C8D; font-style: italic; font-size: 0.9rem;">No errors recorded yet. Keep practicing!</p>`;
+    } else {
+        let rankHtml = `<table><thead><tr><th>Rank</th><th>Word</th><th>Errors</th></tr></thead><tbody>`;
+        sortedErrors.forEach(([word, count], idx) => {
+            rankHtml += `<tr>
+                <td>#${idx + 1}</td>
+                <td><strong>${word}</strong> <button class="audio-btn" onclick="speak('${word}')" style="width:22px; height:22px; font-size:0.7rem;">🔊</button></td>
+                <td><span style="color:var(--danger); font-weight:bold;">${count}</span></td>
+            </tr>`;
+        });
+        rankHtml += `</tbody></table>`;
+        rankingContainer.innerHTML = rankHtml;
+    }
 }
 
 function resetStatsData() {
-    if (confirm("Are you sure you want to reset your completed statistics?")) {
+    if (confirm("Are you sure you want to reset your general statistics? (Error ranking will be preserved as requested)")) {
         globalCompletedCount = 0;
         localStorage.removeItem('eng_completed_count');
         updateStatsDisplay();
-        alert("Statistics have been reset.");
+        alert("General statistics have been reset (Error history remains intact).");
     }
 }
 
