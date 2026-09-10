@@ -315,7 +315,7 @@
         </div>
     </div>
 
-    <!-- TAB 3: LISTENING (CON CATEGORIE E CAMBIO VIDEO) -->
+    <!-- TAB 3: LISTENING -->
     <div id="listening" class="tab-content">
         <div class="card-box">
             <h3>🎧 Ascolto Guidato da YouTube</h3>
@@ -328,14 +328,10 @@
                 </select>
             </div>
 
-            <div class="video-container" id="youtubeContainer">
-                <!-- Video inserito dinamicamente -->
-            </div>
+            <div class="video-container" id="youtubeContainer"></div>
 
-            <p style="text-align: left; font-weight: bold; color: #555;">Completa le parole mancanti ascoltando:</p>
-            <div id="listeningSentencesContainer">
-                <!-- Frasi multiple con input -->
-            </div>
+            <p style="text-align: left; font-weight: bold; color: #555;">Completa le parole mancanti ascoltando (<span id="videoCounter">1/5</span>):</p>
+            <div id="listeningSentencesContainer"></div>
 
             <button class="action-btn" onclick="checkListeningAnswers()">Verifica Risposte</button>
             <br><br>
@@ -385,53 +381,95 @@ const dictionaryData = [
     { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere" }
 ];
 
-// Database strutturato con più video reali per ciascuna delle 3 categorie
+// Database esteso di video per garantire varietà di scelta nelle 3 categorie
 const listeningDatabase = {
     music: [
         {
-            videoId: "fJ9rUzIMcZQ", // Esempio: Brano musicale pop con testo
+            videoId: "fJ9rUzIMcZQ",
             lines: [
                 "We have to <input class='blank-input' data-ans='improve'> our rhythm every single day.",
                 "You cannot <input class='blank-input' data-ans='avoid'> the truth when the music plays."
             ]
         },
         {
-            videoId: "kJQP7kiw5Fk", // Altro brano musicale famoso
+            videoId: "kJQP7kiw5Fk",
             lines: [
                 "We will <input class='blank-input' data-ans='achieve'> greatness through our song.",
                 "It takes deep <input class='blank-input' data-ans='commitment'> to keep singing."
+            ]
+        },
+        {
+            videoId: "3JZ_D3ELwOQ",
+            lines: [
+                "Sometimes we need to <input class='blank-input' data-ans='adapt'> to new melodies.",
+                "Listen close and try to <input class='blank-input' data-ans='acquire'> the exact tone."
+            ]
+        },
+        {
+            videoId: "OPf0YbXqDm0",
+            lines: [
+                "Every single artist wants to <input class='blank-input' data-ans='accomplish'> success.",
+                "Never let fear <input class='blank-input' data-ans='challenge'> your creative passion."
             ]
         }
     ],
     documentary: [
         {
-            videoId: "J---aiyznGQ", // Documentario / Natura (National Geographic style)
+            videoId: "J---aiyznGQ",
             lines: [
                 "Wildlife must <input class='blank-input' data-ans='adapt'> to survive changing climates.",
                 "Researchers try to <input class='blank-input' data-ans='acquire'> accurate data from nature."
             ]
         },
         {
-            videoId: "C0DPdy98e4c", // Documentario scientifico o geografico
+            videoId: "C0DPdy98e4c",
             lines: [
                 "We must <input class='blank-input' data-ans='address'> environmental challenges immediately.",
                 "Scientists work to <input class='blank-input' data-ans='establish'> new ecological reserves."
+            ]
+        },
+        {
+            videoId: "9bZkp7q19f0",
+            lines: [
+                "Explorers need to <input class='blank-input' data-ans='evaluate'> the terrain carefully.",
+                "We can <input class='blank-input' data-ans='expand'> our knowledge about remote habitats."
+            ]
+        },
+        {
+            videoId: "ZZ5LpwO-An4",
+            lines: [
+                "It is essential to <input class='blank-input' data-ans='handle'> natural resources wisely.",
+                "We must <input class='blank-input' data-ans='determine'> the impact of human activities."
             ]
         }
     ],
     podcast: [
         {
-            videoId: "5qap5aO4i9A", // TED Talk / Podcast di crescita personale
+            videoId: "5qap5aO4i9A",
             lines: [
                 "Successful leaders know how to <input class='blank-input' data-ans='handle'> high pressure.",
                 "We need to <input class='blank-input' data-ans='determine'> our priorities carefully."
             ]
         },
         {
-            videoId: "R_fZjGm2OrM", // Intervista / Podcast motivazionale
+            videoId: "R_fZjGm2OrM",
             lines: [
                 "You must <input class='blank-input' data-ans='accomplish'> your daily targets.",
                 "It takes true <input class='blank-input' data-ans='dedication'> to build a successful career."
+            ]
+        },
+        {
+            videoId: "ZXsQAXx_ao0",
+            lines: [
+                "Great speakers always <input class='blank-input' data-ans='encourage'> their audience.",
+                "We should <input class='blank-input' data-ans='facilitate'> open discussions on important topics."
+            ]
+        },
+        {
+            videoId: "L_LUpnjgPso",
+            lines: [
+                "Every professional must <input class='blank-input' data-ans='acknowledge'> their own mistakes.",
+                "Take time to <input class='blank-input' data-ans='evaluate'> your long term goals."
             ]
         }
     ]
@@ -564,19 +602,18 @@ function checkWritingAnswer() {
     }
 }
 
-// Gestione avanzata del Listening con cambio video
 function loadListeningExercise() {
     const category = document.getElementById('listeningCategorySelect').value;
     const videoList = listeningDatabase[category];
     const currentIndex = currentVideoIndexes[category];
     const currentEx = videoList[currentIndex];
 
-    // Inserisce il video YouTube attivo
     document.getElementById('youtubeContainer').innerHTML = `
         <iframe src="https://www.youtube.com/embed/${currentEx.videoId}" allowfullscreen></iframe>
     `;
 
-    // Inserisce le frasi con i campi di input
+    document.getElementById('videoCounter').innerText = `${currentIndex + 1}/${videoList.length}`;
+
     let linesHtml = "";
     currentEx.lines.forEach((line, index) => {
         linesHtml += `<div class="listening-line"><strong>Frase ${index + 1}:</strong> ${line}</div>`;
@@ -593,7 +630,6 @@ function nextVideoInCategory() {
     const category = document.getElementById('listeningCategorySelect').value;
     const videoList = listeningDatabase[category];
     
-    // Passa al video successivo in modo ciclico
     currentVideoIndexes[category] = (currentVideoIndexes[category] + 1) % videoList.length;
     loadListeningExercise();
 }
@@ -654,11 +690,10 @@ function checkQuiz(btn, selected) {
         document.getElementById('statScore').innerText = score;
     } else {
         btn.classList.add('wrong');
-        feedback.innerHTML = `<span style='color:var(--danger)'>Sbagliato. Era: ${currentQuizWord.en}</span>`;
+        feedback.innerHTML = "<span style='color:var(--danger)'>Sbagliato. Era: ${currentQuizWord.en}</span>`;
     }
 }
 
-// Inizializzazione
 initCategorySelect();
 loadDailyCards();
 renderRepository(dictionaryData);
