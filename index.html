@@ -431,9 +431,6 @@
                 <h3 style="color: #7F8C8D; margin-bottom: 10px;">⚠️ Top 10 Error Words (Cumulative)</h3>
                 <div id="errorRankingContainer"></div>
             </div>
-
-            <br>
-            <button class="action-btn" style="background: var(--danger); border-color: var(--danger); color: white;" onclick="resetStatsData()">🗑️ Reset General Statistics</button>
         </div>
     </div>
 </div>
@@ -460,6 +457,16 @@ const baseDictionary = [
     { day: 1, category: "Crescita Personale", en: "Evaluate", fig: "i-væ-lu-eit", it: "Valutare", es: "Evaluar", da: "Evaluere", sentence: "Managers ___ employee performance every year." },
     { day: 1, category: "Crescita Personale", en: "Expand", fig: "eks-pænd", it: "Espandere / Ampliare", es: "Expandir", da: "Udvide", sentence: "The business plans to ___ its operations abroad." },
     { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere", sentence: "New software tools can ___ remote collaboration." }
+];
+
+const essayPromptsList = [
+    { topic: "Describe a goal you want to accomplish this year and why it matters to you.", minChars: 250 },
+    { topic: "How do you handle stress and high-pressure situations in your daily routine?", minChars: 300 },
+    { topic: "Discuss the importance of continuous learning and personal growth in a career.", minChars: 280 },
+    { topic: "What role does curiosity play in acquiring new skills and mastering a language?", minChars: 250 },
+    { topic: "Describe a major challenge you faced and how you managed to adapt to it.", minChars: 300 },
+    { topic: "Why is dedication more important than raw talent when achieving long-term success?", minChars: 270 },
+    { topic: "How can technology facilitate better communication and teamwork across different cultures?", minChars: 300 }
 ];
 
 const listeningDatabase = {
@@ -491,7 +498,7 @@ let totalSessionTarget = 20;
 let sessionCompletedCount = 0;
 let globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
 let errorTrackingCounts = JSON.parse(localStorage.getItem('eng_error_tracking')) || {};
-let activityLog = JSON.parse(localStorage.getItem('eng_activity_log')) || {}; // formato: {"YYYY-MM-DD": count}
+let activityLog = JSON.parse(localStorage.getItem('eng_activity_log')) || {};
 
 let currentWritingType = 1;
 let currentWritingData = null;
@@ -521,12 +528,25 @@ function toggleWritingMode() {
 
     if (mode === 'essay') {
         practiceControls.style.display = 'none';
+        
+        // Seleziona un prompt giornaliero basato sul giorno dell'anno
+        const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+        const currentPrompt = essayPromptsList[dayOfYear % essayPromptsList.length];
+
         area.innerHTML = `
-            <h3>✍️ Free Writing & Essay Correction</h3>
-            <p style="text-align: left; color: #555; font-size: 0.9rem;">Scrivi un piccolo saggio o un testo libero in inglese. Il sistema analizzerà il testo e aggiungerà automaticamente eventuali parole nuove o complesse nel tuo dizionario!</p>
-            <textarea id="essayInput" rows="6" placeholder="Type your essay or paragraph in English here..."></textarea>
+            <div style="text-align: left; margin-bottom: 12px;">
+                <h3 style="color: var(--primary); margin: 0 0 5px 0;">✍️ Daily Writing Prompt & Idea</h3>
+                <p style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9; font-size: 0.95rem; line-height: 1.5; color: #333; margin: 0 0 10px 0;">
+                    💡 <strong>Idea of the Day:</strong> ${currentPrompt.topic}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #7F8C8D;">
+                    <span>Obiettivo minimo: <strong id="minCharTarget">${currentPrompt.minChars}</strong> caratteri</span>
+                    <span>Caratteri attuali: <strong id="charCounter" style="color: var(--danger);">0</strong></span>
+                </div>
+            </div>
+            <textarea id="essayInput" rows="12" placeholder="Type your essay or paragraph in English here..." oninput="updateEssayCharCount(${currentPrompt.minChars})"></textarea>
             <br><br>
-            <button class="action-btn" onclick="submitEssayForCorrection()">🔍 Analyze & Correct Text</button>
+            <button class="action-btn" onclick="submitEssayForCorrection(${currentPrompt.minChars})">🔍 Analyze & Correct Text</button>
             <div id="essayFeedback" style="margin-top: 15px; text-align: left;"></div>
         `;
     } else if (mode === 'reviewErrors') {
@@ -535,6 +555,18 @@ function toggleWritingMode() {
     } else {
         practiceControls.style.display = 'flex';
         restartWritingSession();
+    }
+}
+
+function updateEssayCharCount(minChars) {
+    const text = document.getElementById('essayInput').value;
+    const count = text.length;
+    const counterEl = document.getElementById('charCounter');
+    counterEl.innerText = count;
+    if (count >= minChars) {
+        counterEl.style.color = "var(--success)";
+    } else {
+        counterEl.style.color = "var(--danger)";
     }
 }
 
@@ -557,7 +589,7 @@ function startErrorReviewSession() {
     generateWritingExercise();
 }
 
-function submitEssayForCorrection() {
+function submitEssayForCorrection(minChars) {
     const text = document.getElementById('essayInput').value.trim();
     const feedback = document.getElementById('essayFeedback');
     
@@ -566,10 +598,15 @@ function submitEssayForCorrection() {
         return;
     }
 
+    if (text.length < minChars) {
+        feedback.innerHTML = `<p style='color:var(--danger); font-weight:bold;'>Il testo è troppo corto! Hai scritto ${text.length} caratteri su un minimo richiesto di ${minChars}.</p>`;
+        return;
+    }
+
     feedback.innerHTML = `
         <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E7E9;">
             <h4 style="color: var(--success); margin-top:0;">✅ Correction & Feedback Report</h4>
-            <p><strong>Grammar & Style Check:</strong> Well written text! Good flow and syntax.</p>
+            <p><strong>Grammar & Style Check:</strong> Well written text! Excellent structure and coherence.</p>
             <p style="color: var(--primary); font-weight: bold;">📦 Dictionary Update:</p>
             <ul id="extractedWordsList" style="margin: 5px 0; padding-left: 20px;"></ul>
         </div>
@@ -745,6 +782,8 @@ function switchTab(tabId, event) {
             }
         } else if (mode === 'reviewErrors') {
             startErrorReviewSession();
+        } else if (mode === 'essay') {
+            toggleWritingMode();
         }
     }
     if (tabId === 'listening') loadListeningExercise();
@@ -944,7 +983,6 @@ function renderCalendar() {
     document.getElementById('calendarMonthTitle').innerText = `${monthNames[month]} ${year}`;
 
     const firstDayIndex = new Date(year, month, 1).getDay();
-    // Adatta per iniziare da Lunedì (0 = Lun, ..., 6 = Dom)
     let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
     const totalDays = new Date(year, month + 1, 0).getDate();
 
@@ -958,7 +996,6 @@ function renderCalendar() {
         <div class="calendar-day-name">Dom</div>
     `;
 
-    // Giorni vuoti del mese precedente
     for (let i = 0; i < startDay; i++) {
         gridHtml += `<div class="calendar-day" style="background: #F9FAFA; opacity: 0.4;"></div>`;
     }
@@ -993,7 +1030,6 @@ function renderCalendar() {
 function renderWeeklyReport() {
     const reportContainer = document.getElementById('weeklyReportContent');
     
-    // Calcola dati ultimi 7 giorni
     let totalWeekExercises = 0;
     let activeDaysCount = 0;
     let today = new Date();
@@ -1042,15 +1078,6 @@ function updateStatsDisplay() {
         });
         rankHtml += `</tbody></table>`;
         rankingContainer.innerHTML = rankHtml;
-    }
-}
-
-function resetStatsData() {
-    if (confirm("Are you sure you want to reset your general statistics? (Error ranking will be preserved as requested)")) {
-        globalCompletedCount = 0;
-        localStorage.removeItem('eng_completed_count');
-        updateStatsDisplay();
-        alert("General statistics have been reset (Error history remains intact).");
     }
 }
 
