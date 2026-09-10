@@ -233,6 +233,19 @@
         }
         .stat-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #7F8C8D; }
         .stat-card .value { font-size: 1.8rem; font-weight: bold; color: var(--primary); }
+
+        .writing-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #E5E7E9;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -260,6 +273,18 @@
 
     <!-- TAB 2: WRITING & PRACTICE -->
     <div id="writing" class="tab-content">
+        <div class="controls" style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #E5E7E9;">
+            <label for="sessionSizeSelect"><strong>Session Questions:</strong></label>
+            <select id="sessionSizeSelect" onchange="restartWritingSession()">
+                <option value="10">10 Questions</option>
+                <option value="20" selected>20 Questions</option>
+                <option value="40">40 Questions</option>
+                <option value="60">60 Questions</option>
+                <option value="all">All Dictionary Words</option>
+            </select>
+            <button class="action-btn" style="width: auto; padding: 8px 15px;" onclick="restartWritingSession()">🔄 Restart</button>
+        </div>
+
         <div class="card-box" id="writingArea">
             <!-- Dynamic content loaded via JS -->
         </div>
@@ -372,9 +397,11 @@ const listeningDatabase = {
     ]
 };
 
-// Gestione della coda di apprendimento (Spaced repetition / Coda di recupero)
+// Variabili per la gestione dello stato di Writing
 let practiceQueue = [];
-let completedCount = 0;
+let totalSessionTarget = 20;
+let sessionCompletedCount = 0;
+let globalCompletedCount = 0;
 let currentWritingType = 1;
 let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
@@ -383,14 +410,33 @@ function initApp() {
     initCategorySelect();
     loadDailyCards();
     renderRepository(dictionaryData);
-    resetPracticeQueue();
+    restartWritingSession();
     updateStatsDisplay();
 }
 
-function resetPracticeQueue() {
-    practiceQueue = [...dictionaryData];
-    // Mescola casualmente la coda iniziale
-    practiceQueue.sort(() => Math.random() - 0.5);
+function restartWritingSession() {
+    const selectVal = document.getElementById('sessionSizeSelect').value;
+    if (selectVal === 'all') {
+        totalSessionTarget = dictionaryData.length;
+    } else {
+        totalSessionTarget = parseInt(selectVal);
+    }
+
+    sessionCompletedCount = 0;
+    
+    // Crea una copia del dizionario e mescolala
+    let shuffled = [...dictionaryData].sort(() => Math.random() - 0.5);
+    
+    // Taglia in base al numero di quesiti scelti (se ci sono abbastanza parole)
+    if (shuffled.length > totalSessionTarget) {
+        practiceQueue = shuffled.slice(0, totalSessionTarget);
+    } else {
+        practiceQueue = shuffled;
+        totalSessionTarget = practiceQueue.length;
+    }
+
+    generateWritingExercise();
+    updateStatsDisplay();
 }
 
 function initCategorySelect() {
@@ -481,7 +527,14 @@ function switchTab(tabId, event) {
     document.getElementById(tabId).classList.add('active');
     event.target.classList.add('active');
 
-    if (tabId === 'writing') generateWritingExercise();
+    if (tabId === 'writing') {
+        // Se la sessione è completata o vuota all'apertura, riavvia
+        if (practiceQueue.length === 0 && sessionCompletedCount >= totalSessionTarget) {
+            restartWritingSession();
+        } else {
+            generateWritingExercise();
+        }
+    }
     if (tabId === 'listening') loadListeningExercise();
     if (tabId === 'stats') updateStatsDisplay();
 }
@@ -489,17 +542,29 @@ function switchTab(tabId, event) {
 function generateWritingExercise() {
     const area = document.getElementById('writingArea');
     
-    // Se la coda è vuota, la ricarichiamo per continuare il ciclo
+    // Se la sessione corrente è terminata
     if (practiceQueue.length === 0) {
-        resetPracticeQueue();
+        area.innerHTML = `
+            <h3>🎉 Session Completed!</h3>
+            <p>You have successfully completed all ${totalSessionTarget} questions in this session.</p>
+            <br>
+            <button class="action-btn" onclick="restartWritingSession()">Start New Session</button>
+        `;
+        return;
     }
 
-    // Prende la prima parola in coda
     currentWritingData = practiceQueue[0];
     currentWritingType = Math.floor(Math.random() * 3) + 1;
 
+    let progressHtml = `
+        <div class="writing-header-bar">
+            <span>📝 Progress: ${sessionCompletedCount} / ${totalSessionTarget} done</span>
+            <span style="color: #7F8C8D; font-size: 0.85rem;">Queue (Errors to retry): ${practiceQueue.length}</span>
+        </div>
+    `;
+
     if (currentWritingType === 1) {
-        area.innerHTML = `
+        area.innerHTML = progressHtml + `
             <h3>✍️ Exercise: Translate to English</h3>
             <p>Translate this Italian expression:</p>
             <h2 style="color: var(--primary);">${currentWritingData.it}</h2>
@@ -511,7 +576,7 @@ function generateWritingExercise() {
         `;
     } else if (currentWritingType === 2) {
         let sentenceWithBlank = currentWritingData.sentence.replace(currentWritingData.en, "_____");
-        area.innerHTML = `
+        area.innerHTML = progressHtml + `
             <h3>✍️ Exercise: Complete the Sentence</h3>
             <p>Fill in the blank with the correct English word:</p>
             <h3 style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9;">"${sentenceWithBlank}"</h3>
@@ -529,7 +594,7 @@ function generateWritingExercise() {
         }
         options.sort(() => Math.random() - 0.5);
 
-        area.innerHTML = `
+        area.innerHTML = progressHtml + `
             <h3>✍️ Exercise: Match the Translation</h3>
             <p>Select the correct English word for:</p>
             <h2 style="color: var(--primary);">"${currentWritingData.it}"</h2>
@@ -547,13 +612,12 @@ function checkWritingAnswer() {
     const feedback = document.getElementById('writingFeedback');
     
     if (input === currentWritingData.en.toLowerCase()) {
-        // Risposta corretta: rimuove la parola dalla coda e incrementa i completati
         practiceQueue.shift();
-        completedCount++;
+        sessionCompletedCount++;
+        globalCompletedCount++;
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 Loading next...</strong>";
         setTimeout(generateWritingExercise, 1000);
     } else {
-        // Risposta errata: sposta la parola in fondo alla coda per riproporla dopo
         const wrongWord = practiceQueue.shift();
         practiceQueue.push(wrongWord);
         feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong>. It will be repeated later.</span>`;
@@ -567,7 +631,8 @@ function checkMatchingAnswer(btn, selected) {
     if (selected === currentWritingData.en) {
         btn.classList.add('correct');
         practiceQueue.shift();
-        completedCount++;
+        sessionCompletedCount++;
+        globalCompletedCount++;
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct match! 🎉 Loading next...</strong>";
         setTimeout(generateWritingExercise, 1000);
     } else {
@@ -631,7 +696,7 @@ function checkListeningAnswers() {
 
     if(correct) {
         feedback.innerHTML = "<strong style='color:var(--success)'>All sentences are correct! Great job! 🎉</strong>";
-        completedCount++;
+        globalCompletedCount++;
     } else {
         feedback.innerHTML = "<span style='color:var(--danger)'>Some highlighted fields have errors. Listen again and try!</span>";
     }
@@ -640,10 +705,10 @@ function checkListeningAnswers() {
 
 function updateStatsDisplay() {
     document.getElementById('statTotalWords').innerText = dictionaryData.length;
-    document.getElementById('statCompleted').innerText = completedCount;
+    document.getElementById('statCompleted').innerText = globalCompletedCount;
     document.getElementById('statQueueSize').innerText = practiceQueue.length;
     
-    let progress = Math.round((completedCount / (completedCount + practiceQueue.length || 1)) * 100);
+    let progress = Math.round((sessionCompletedCount / totalSessionTarget) * 100) || 0;
     document.getElementById('statProgress').innerText = progress + "%";
 }
 
