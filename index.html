@@ -225,49 +225,6 @@
             border-radius: 4px;
             font-size: 0.95rem;
         }
-
-        @media screen and (max-width: 768px) {
-            body { padding: 5px; }
-            .app-container { border-radius: 8px; }
-            
-            table, thead, tbody, th, tr {
-                display: block;
-                width: 100%;
-            }
-            
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-            
-            tr {
-                background: #fff;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                margin-bottom: 12px;
-                padding: 10px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            }
-            
-            td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border: none;
-                border-bottom: 1px solid #f4f4f4;
-                padding: 8px 4px;
-                font-size: 0.9rem;
-            }
-            
-            td:last-child { border-bottom: none; }
-            td:nth-of-type(1):before { content: "Inglese:"; font-weight: bold; color: #7F8C8D; }
-            td:nth-of-type(2):before { content: "Pronuncia:"; font-weight: bold; color: #7F8C8D; }
-            td:nth-of-type(3):before { content: "🇮🇹 Italiano:"; font-weight: bold; color: #7F8C8D; }
-            td:nth-of-type(4):before { content: "🇪🇸 Spagnolo:"; font-weight: bold; color: #7F8C8D; }
-            td:nth-of-type(5):before { content: "🇩🇰 Danese:"; font-weight: bold; color: #7F8C8D; }
-            td:nth-of-type(6):before { content: "Giorno:"; font-weight: bold; color: #7F8C8D; }
-        }
     </style>
 </head>
 <body>
@@ -278,44 +235,34 @@
     </header>
 
     <div class="stats-bar">
-        <div>📈 Parole: <span id="statTotal">0</span></div>
-        <div>🎯 Punti: <span id="statScore">0</span></div>
-        <div>🔥 Giorno 1</div>
+        <div>📈 Words: <span id="statTotal">0</span></div>
+        <div>🎯 Points: <span id="statScore">0</span></div>
+        <div>🔥 Day 1</div>
     </div>
 
     <nav>
-        <button class="active" onclick="switchTab('daily', event)">📅 Giorno</button>
-        <button onclick="switchTab('writing', event)">✍️ Writing</button>
+        <button class="active" onclick="switchTab('daily', event)">📅 Day</button>
+        <button onclick="switchTab('writing', event)">✍️ Writing & Practice</button>
         <button onclick="switchTab('listening', event)">🎧 Listening</button>
-        <button onclick="switchTab('quiz', event)">🧠 Quiz</button>
-        <button onclick="switchTab('repository', event)">📚 Dizionario</button>
+        <button onclick="switchTab('repository', event)">📚 Dictionary</button>
     </nav>
 
     <!-- TAB 1: SCHEDA GIORNO -->
     <div id="daily" class="tab-content active">
         <div class="controls">
-            <h2 style="font-size: 1.1rem; margin:0;">📅 Programma Odierno</h2>
+            <h2 style="font-size: 1.1rem; margin:0;">📅 Daily Program</h2>
         </div>
         <div id="dailyTableContainer"></div>
     </div>
 
-    <!-- TAB 2: WRITING -->
+    <!-- TAB 2: WRITING & PRACTICE -->
     <div id="writing" class="tab-content">
-        <div class="card-box">
-            <h3>✍️ Esercizio di Ortografia</h3>
-            <p>Traduci in inglese:</p>
-            <h2 id="writingTargetIt">"-"</h2>
-            <p><small>Pronuncia: <em id="writingTargetFig">-</em></small></p>
-            <input type="text" id="writingInput" placeholder="Scrivi in inglese...">
-            <br><br>
-            <button class="action-btn" onclick="checkWritingAnswer()">Verifica</button>
-            <br><br>
-            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Prossima Parola</button>
-            <p id="writingFeedback"></p>
+        <div class="card-box" id="writingArea">
+            <!-- Dynamic content loaded via JS -->
         </div>
     </div>
 
-    <!-- TAB 3: LISTENING (SOLO VIDEO IN INGLESE) -->
+    <!-- TAB 3: LISTENING -->
     <div id="listening" class="tab-content">
         <div class="card-box">
             <h3>🎧 English Audio & Video Practice</h3>
@@ -340,17 +287,12 @@
         </div>
     </div>
 
-    <!-- TAB 4: QUIZ -->
-    <div id="quiz" class="tab-content">
-        <div id="quizArea" class="card-box"></div>
-    </div>
-
-    <!-- TAB 5: DIZIONARIO -->
+    <!-- TAB 4: DIZIONARIO -->
     <div id="repository" class="tab-content">
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="Cerca parola..." onkeyup="filterRepository()">
+            <input type="text" id="searchInput" placeholder="Search word..." onkeyup="filterRepository()">
             <select id="categorySelect" onchange="filterRepository()">
-                <option value="">📂 Tutte le categorie</option>
+                <option value="">📂 All categories</option>
             </select>
         </div>
         <div id="repoTableContainer"></div>
@@ -359,125 +301,52 @@
 
 <script>
 const dictionaryData = [
-    { day: 1, category: "Obiettivi e Successo", en: "Accomplish", fig: "a-kóm-plish", it: "Realizzare / Portare a termine", es: "Lograr", da: "Opnå" },
-    { day: 1, category: "Finanze e Gestione", en: "Afford", fig: "a-fóord", it: "Permettersi (economicamente)", es: "Costear", da: "Have råd til" },
-    { day: 1, category: "Azioni e Decisioni", en: "Avoid", fig: "a-vóid", it: "Evitare", es: "Evitar", da: "Undgå" },
-    { day: 1, category: "Crescita Personale", en: "Improve", fig: "im-prúuv", it: "Migliorare", es: "Mejorar", da: "Forbedre" },
-    { day: 1, category: "Finanze e Gestione", en: "Handle", fig: "hæn-dl", it: "Gestire / Maneggiare", es: "Manejar", da: "Håndtere" },
-    { day: 1, category: "Obiettivi e Successo", en: "Achieve", fig: "a-chíiv", it: "Raggiungere / Riuscire", es: "Lograr", da: "Opnå" },
-    { day: 1, category: "Crescita Personale", en: "Acknowledge", fig: "ak-nó-lij", it: "Riconoscere / Ammettere", es: "Reconocer", da: "Anerkende" },
-    { day: 1, category: "Crescita Personale", en: "Acquire", fig: "a-kuái-ar", it: "Acquisire", es: "Adquirir", da: "Erhverve" },
-    { day: 1, category: "Crescita Personale", en: "Adapt", fig: "a-dápt", it: "Adattarsi", es: "Adaptar", da: "Tilpasse" },
-    { day: 1, category: "Azioni e Decisioni", en: "Address", fig: "a-drés", it: "Affrontare (un problema)", es: "Abordar", da: "Tage sig af" },
-    { day: 1, category: "Azioni e Decisioni", en: "Challenge", fig: "chæ-lenj", it: "Sfida / Sfidare", es: "Desafío", da: "Udfordring" },
-    { day: 1, category: "Obiettivi e Successo", en: "Commitment", fig: "ko-mít-ment", it: "Impegno", es: "Compromiso", da: "Forpligtelse" },
-    { day: 1, category: "Crescita Personale", en: "Curiosity", fig: "kiu-ri-ó-si-ti", it: "Curiosità", es: "Curiosidad", da: "Nysgerrighed" },
-    { day: 1, category: "Obiettivi e Successo", en: "Dedication", fig: "de-di-kéi-shon", it: "Dedizione", es: "Dedicación", da: "Dedikation" },
-    { day: 1, category: "Azioni e Decisioni", en: "Determine", fig: "di-tér-min", it: "Determinare / Stabilire", es: "Determinar", da: "Bestemme" },
-    { day: 1, category: "Crescita Personale", en: "Encourage", fig: "in-kó-rij", it: "Incoraggiare", es: "Fomentar", da: "Oppmuntre" },
-    { day: 1, category: "Azioni e Decisioni", en: "Establish", fig: "es-tæ-blish", it: "Stabilire / Fondare", es: "Establecer", da: "Etablere" },
-    { day: 1, category: "Crescita Personale", en: "Evaluate", fig: "i-væ-lu-eit", it: "Valutare", es: "Evaluar", da: "Evaluere" },
-    { day: 1, category: "Crescita Personale", en: "Expand", fig: "eks-pænd", it: "Espandere / Ampliare", es: "Expandir", da: "Udvide" },
-    { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere" }
+    { day: 1, category: "Obiettivi e Successo", en: "Accomplish", fig: "a-kóm-plish", it: "Realizzare / Portare a termine", sentence: "We need to ___ our main project goals this year." },
+    { day: 1, category: "Finanze e Gestione", en: "Afford", fig: "a-fóord", it: "Permettersi (economicamente)", sentence: "I cannot ___ to buy a brand new car right now." },
+    { day: 1, category: "Azioni e Decisioni", en: "Avoid", fig: "a-vóid", it: "Evitare", sentence: "Try to ___ making careless mistakes in your writing." },
+    { day: 1, category: "Crescita Personale", en: "Improve", fig: "im-prúuv", it: "Migliorare", sentence: "She practices every day to ___ her English fluency." },
+    { day: 1, category: "Finanze e Gestione", en: "Handle", fig: "hæn-dl", it: "Gestire / Maneggiare", sentence: "An experienced manager knows how to ___ high pressure." },
+    { day: 1, category: "Obiettivi e Successo", en: "Achieve", fig: "a-chíiv", it: "Raggiungere / Riuscire", sentence: "Hard work helps you ___ long term success." },
+    { day: 1, category: "Crescita Personale", en: "Acknowledge", fig: "ak-nó-lij", it: "Riconoscere / Ammettere", sentence: "It is important to ___ your own mistakes." },
+    { day: 1, category: "Crescita Personale", en: "Acquire", fig: "a-kuái-ar", it: "Acquisire", sentence: "Children ___ new languages very quickly." },
+    { day: 1, category: "Crescita Personale", en: "Adapt", fig: "a-dápt", it: "Adattarsi", sentence: "Species must ___ to survive climate changes." },
+    { day: 1, category: "Azioni e Decisioni", en: "Address", fig: "a-drés", it: "Affrontare (un problema)", sentence: "We need to ___ this urgent problem immediately." },
+    { day: 1, category: "Azioni e Decisioni", en: "Challenge", fig: "chæ-lenj", it: "Sfida / Sfidare", sentence: "Learning a new skill is always a great ___." },
+    { day: 1, category: "Obiettivi e Successo", en: "Commitment", fig: "ko-mít-ment", it: "Impegno", sentence: "Success requires daily discipline and total ___." },
+    { day: 1, category: "Crescita Personale", en: "Curiosity", fig: "kiu-ri-ó-si-ti", it: "Curiosità", sentence: "Good students always show strong ___." },
+    { day: 1, category: "Obiettivi e Successo", en: "Dedication", fig: "de-di-kéi-shon", it: "Dedizione", sentence: "Her absolute ___ resulted in a promotion." },
+    { day: 1, category: "Azioni e Decisioni", en: "Determine", fig: "di-tér-min", it: "Determinare / Stabilire", sentence: "We must ___ the best course of action." },
+    { day: 1, category: "Crescita Personale", en: "Encourage", fig: "in-kó-rij", it: "Incoraggiare", sentence: "Good teachers ___ students to ask questions." },
+    { day: 1, category: "Azioni e Decisioni", en: "Establish", fig: "es-tæ-blish", it: "Stabilire / Fondare", sentence: "The company aims to ___ new international markets." },
+    { day: 1, category: "Crescita Personale", en: "Evaluate", fig: "i-væ-lu-eit", it: "Valutare", sentence: "Managers ___ employee performance every year." },
+    { day: 1, category: "Crescita Personale", en: "Expand", fig: "eks-pænd", it: "Espandere / Ampliare", sentence: "The business plans to ___ its operations abroad." },
+    { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", sentence: "New software tools can ___ remote collaboration." }
 ];
 
-// Database con soli video in lingua inglese (Music, Documentary, Podcast/Interviews)
 const listeningDatabase = {
     music: [
-        {
-            videoId: "fJ9rUzIMcZQ", // English Pop Track
-            lines: [
-                "We have to <input class='blank-input' data-ans='improve'> our rhythm every single day.",
-                "You cannot <input class='blank-input' data-ans='avoid'> the truth when the music plays."
-            ]
-        },
-        {
-            videoId: "kJQP7kiw5Fk", // Global Hit English Song
-            lines: [
-                "We will <input class='blank-input' data-ans='achieve'> greatness through our song.",
-                "It takes deep <input class='blank-input' data-ans='commitment'> to keep singing."
-            ]
-        },
-        {
-            videoId: "3JZ_D3ELwOQ", // English Official Music Video
-            lines: [
-                "Sometimes we need to <input class='blank-input' data-ans='adapt'> to new melodies.",
-                "Listen close and try to <input class='blank-input' data-ans='acquire'> the exact tone."
-            ]
-        },
-        {
-            videoId: "OPf0YbXqDm0", // English Pop Hit
-            lines: [
-                "Every single artist wants to <input class='blank-input' data-ans='accomplish'> success.",
-                "Never let fear <input class='blank-input' data-ans='challenge'> your creative passion."
-            ]
-        }
+        { videoId: "fJ9rUzIMcZQ", lines: ["We have to <input class='blank-input' data-ans='improve'> our rhythm every single day.", "You cannot <input class='blank-input' data-ans='avoid'> the truth when the music plays."] },
+        { videoId: "kJQP7kiw5Fk", lines: ["We will <input class='blank-input' data-ans='achieve'> greatness through our song.", "It takes deep <input class='blank-input' data-ans='commitment'> to keep singing."] },
+        { videoId: "3JZ_D3ELwOQ", lines: ["Sometimes we need to <input class='blank-input' data-ans='adapt'> to new melodies.", "Listen close and try to <input class='blank-input' data-ans='acquire'> the exact tone."] },
+        { videoId: "OPf0YbXqDm0", lines: ["Every single artist wants to <input class='blank-input' data-ans='accomplish'> success.", "Never let fear <input class='blank-input' data-ans='challenge'> your creative passion."] }
     ],
     documentary: [
-        {
-            videoId: "J---aiyznGQ", // English Nature Documentary (NatGeo style)
-            lines: [
-                "Wildlife must <input class='blank-input' data-ans='adapt'> to survive changing climates.",
-                "Researchers try to <input class='blank-input' data-ans='acquire'> accurate data from nature."
-            ]
-        },
-        {
-            videoId: "C0DPdy98e4c", // English Science Documentary clip
-            lines: [
-                "We must <input class='blank-input' data-ans='address'> environmental challenges immediately.",
-                "Scientists work to <input class='blank-input' data-ans='establish'> new ecological reserves."
-            ]
-        },
-        {
-            videoId: "9bZkp7q19f0", // English Space/Science Video
-            lines: [
-                "Explorers need to <input class='blank-input' data-ans='evaluate'> the terrain carefully.",
-                "We can <input class='blank-input' data-ans='expand'> our knowledge about remote habitats."
-            ]
-        },
-        {
-            videoId: "ZZ5LpwO-An4", // English Earth & Wildlife Documentary
-            lines: [
-                "It is essential to <input class='blank-input' data-ans='handle'> natural resources wisely.",
-                "We must <input class='blank-input' data-ans='determine'> the impact of human activities."
-            ]
-        }
+        { videoId: "J---aiyznGQ", lines: ["Wildlife must <input class='blank-input' data-ans='adapt'> to survive changing climates.", "Researchers try to <input class='blank-input' data-ans='acquire'> accurate data from nature."] },
+        { videoId: "C0DPdy98e4c", lines: ["We must <input class='blank-input' data-ans='address'> environmental challenges immediately.", "Scientists work to <input class='blank-input' data-ans='establish'> new ecological reserves."] },
+        { videoId: "9bZkp7q19f0", lines: ["Explorers need to <input class='blank-input' data-ans='evaluate'> the terrain carefully.", "We can <input class='blank-input' data-ans='expand'> our knowledge about remote habitats."] },
+        { videoId: "ZZ5LpwO-An4", lines: ["It is essential to <input class='blank-input' data-ans='handle'> natural resources wisely.", "We must <input class='blank-input' data-ans='determine'> the impact of human activities."] }
     ],
     podcast: [
-        {
-            videoId: "5qap5aO4i9A", // English TED Talk (Productivity)
-            lines: [
-                "Successful leaders know how to <input class='blank-input' data-ans='handle'> high pressure.",
-                "We need to <input class='blank-input' data-ans='determine'> our priorities carefully."
-            ]
-        },
-        {
-            videoId: "R_fZjGm2OrM", // English Motivational Speech / Interview
-            lines: [
-                "You must <input class='blank-input' data-ans='accomplish'> your daily targets.",
-                "It takes true <input class='blank-input' data-ans='dedication'> to build a successful career."
-            ]
-        },
-        {
-            videoId: "ZXsQAXx_ao0", // English Leadership Podcast
-            lines: [
-                "Great speakers always <input class='blank-input' data-ans='encourage'> their audience.",
-                "We should <input class='blank-input' data-ans='facilitate'> open discussions on important topics."
-            ]
-        },
-        {
-            videoId: "L_LUpnjgPso", // English Growth Mindset Talk
-            lines: [
-                "Every professional must <input class='blank-input' data-ans='acknowledge'> their own mistakes.",
-                "Take time to <input class='blank-input' data-ans='evaluate'> your long term goals."
-            ]
-        }
+        { videoId: "5qap5aO4i9A", lines: ["Successful leaders know how to <input class='blank-input' data-ans='handle'> high pressure.", "We need to <input class='blank-input' data-ans='determine'> our priorities carefully."] },
+        { videoId: "R_fZjGm2OrM", lines: ["You must <input class='blank-input' data-ans='accomplish'> your daily targets.", "It takes true <input class='blank-input' data-ans='dedication'> to build a successful career."] },
+        { videoId: "ZXsQAXx_ao0", lines: ["Great speakers always <input class='blank-input' data-ans='encourage'> their audience.", "We should <input class='blank-input' data-ans='facilitate'> open discussions on important topics."] },
+        { videoId: "L_LUpnjgPso", lines: ["Every professional must <input class='blank-input' data-ans='acknowledge'> their own mistakes.", "Take time to <input class='blank-input' data-ans='evaluate'> your long term goals."] }
     ]
 };
 
 let score = 0;
-let currentWritingWord = null;
-let currentQuizWord = null;
+let currentWritingType = 1;
+let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
 
 document.getElementById('statTotal').innerText = dictionaryData.length;
@@ -495,14 +364,12 @@ function initCategorySelect() {
 
 function loadDailyCards() {
     const words = dictionaryData.filter(w => w.day === 1);
-    let html = `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Spagnolo</th><th>🇩🇰 Danese</th></tr></thead><tbody>`;
+    let html = `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th></tr></thead><tbody>`;
     words.forEach(w => {
         html += `<tr>
             <td><strong>${w.en}</strong> <button class="audio-btn" onclick="speak('${w.en}')">🔊</button></td>
             <td><em>${w.fig}</em></td>
             <td>${w.it}</td>
-            <td>${w.es}</td>
-            <td>${w.da}</td>
         </tr>`;
     });
     html += `</tbody></table>`;
@@ -512,7 +379,7 @@ function loadDailyCards() {
 function renderRepository(words) {
     const container = document.getElementById('repoTableContainer');
     if (words.length === 0) {
-        container.innerHTML = `<p style="text-align: center; color: var(--danger); font-weight: bold; margin-top: 20px;">Parola non presente</p>`;
+        container.innerHTML = `<p style="text-align: center; color: var(--danger); font-weight: bold; margin-top: 20px;">No words found</p>`;
         return;
     }
 
@@ -531,15 +398,13 @@ function renderRepository(words) {
     let html = "";
     for (const [category, catWords] of Object.entries(grouped)) {
         html += `<div class="category-title">📂 ${category}</div>`;
-        html += `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Spagnolo</th><th>🇩🇰 Danese</th><th>Giorno</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>Day</th></tr></thead><tbody>`;
         catWords.forEach(w => {
             html += `<tr>
                 <td><strong>${w.en}</strong> <button class="audio-btn" onclick="speak('${w.en}')">🔊</button></td>
                 <td><em>${w.fig}</em></td>
                 <td>${w.it}</td>
-                <td>${w.es}</td>
-                <td>${w.da}</td>
-                <td>Giorno ${w.day}</td>
+                <td>Day ${w.day}</td>
             </tr>`;
         });
         html += `</tbody></table>`;
@@ -554,9 +419,7 @@ function filterRepository() {
     const filtered = dictionaryData.filter(w => {
         const matchesSearch = search === "" || 
             w.en.toLowerCase().includes(search) || 
-            w.it.toLowerCase().includes(search) || 
-            w.es.toLowerCase().includes(search) || 
-            w.da.toLowerCase().includes(search);
+            w.it.toLowerCase().includes(search);
 
         const matchesCategory = selectedCategory === "" || w.category === selectedCategory;
         return matchesSearch && matchesCategory;
@@ -576,29 +439,90 @@ function switchTab(tabId, event) {
     document.getElementById(tabId).classList.add('active');
     event.target.classList.add('active');
 
-    if (tabId === 'quiz') generateQuiz();
     if (tabId === 'writing') generateWritingExercise();
     if (tabId === 'listening') loadListeningExercise();
 }
 
+// Generazione dinamica dei vari tipi di esercizio nella sezione Writing
 function generateWritingExercise() {
-    currentWritingWord = dictionaryData[Math.floor(Math.random() * dictionaryData.length)];
-    document.getElementById('writingTargetIt').innerText = currentWritingWord.it;
-    document.getElementById('writingTargetFig').innerText = currentWritingWord.fig;
-    document.getElementById('writingInput').value = "";
-    document.getElementById('writingFeedback').innerText = "";
+    const area = document.getElementById('writingArea');
+    currentWritingData = dictionaryData[Math.floor(Math.random() * dictionaryData.length)];
+    
+    // Sceglie casualmente tra 3 tipologie di esercizio: 1 = Traduzione, 2 = Completamento frase, 3 = Associazione opzioni multiple
+    currentWritingType = Math.floor(Math.random() * 3) + 1;
+
+    if (currentWritingType === 1) {
+        area.innerHTML = `
+            <h3>✍️ Exercise 1: Translate to English</h3>
+            <p>Translate this Italian expression:</p>
+            <h2 style="color: var(--primary);">${currentWritingData.it}</h2>
+            <p><small>Pronunciation: <em>${currentWritingData.fig}</em></small></p>
+            <input type="text" id="writingInput" placeholder="Type in English...">
+            <br><br>
+            <button class="action-btn" onclick="checkWritingAnswer()">Check Answer</button>
+            <br><br>
+            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Next Exercise</button>
+            <p id="writingFeedback"></p>
+        `;
+    } else if (currentWritingType === 2) {
+        let sentenceWithBlank = currentWritingData.sentence.replace(currentWritingData.en, "_____");
+        area.innerHTML = `
+            <h3>✍️ Exercise 2: Complete the Sentence</h3>
+            <p>Fill in the blank with the correct English word:</p>
+            <h3 style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9;">"${sentenceWithBlank}"</h3>
+            <p><small>Italian hint: <strong>${currentWritingData.it}</strong></small></p>
+            <input type="text" id="writingInput" placeholder="Missing word...">
+            <br><br>
+            <button class="action-btn" onclick="checkWritingAnswer()">Check Answer</button>
+            <br><br>
+            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Next Exercise</button>
+            <p id="writingFeedback"></p>
+        `;
+    } else {
+        let options = [currentWritingData.en];
+        while(options.length < 4) {
+            let rand = dictionaryData[Math.floor(Math.random() * dictionaryData.length)].en;
+            if(!options.includes(rand)) options.push(rand);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        area.innerHTML = `
+            <h3>✍️ Exercise 3: Match the Translation</h3>
+            <p>Select the correct English word for:</p>
+            <h2 style="color: var(--primary);">"${currentWritingData.it}"</h2>
+            <div class="quiz-options">
+                ${options.map(opt => `<button class="quiz-btn" onclick="checkMatchingAnswer(this, '${opt}')">${opt}</button>`).join('')}
+            </div>
+            <br>
+            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Next Exercise</button>
+            <p id="writingFeedback"></p>
+        `;
+    }
 }
 
 function checkWritingAnswer() {
     const input = document.getElementById('writingInput').value.trim().toLowerCase();
     const feedback = document.getElementById('writingFeedback');
     
-    if (input === currentWritingWord.en.toLowerCase()) {
+    if (input === currentWritingData.en.toLowerCase()) {
         feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 (+15 Points)</strong>";
         score += 15;
         document.getElementById('statScore').innerText = score;
     } else {
-        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. Word: <strong>${currentWritingWord.en}</strong></span>`;
+        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong></span>`;
+    }
+}
+
+function checkMatchingAnswer(btn, selected) {
+    const feedback = document.getElementById('writingFeedback');
+    if (selected === currentWritingData.en) {
+        btn.classList.add('correct');
+        feedback.innerHTML = "<strong style='color:var(--success)'>Correct match! 🎉 (+10 Points)</strong>";
+        score += 10;
+        document.getElementById('statScore').innerText = score;
+    } else {
+        btn.classList.add('wrong');
+        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentWritingData.en}</span>`;
     }
 }
 
@@ -657,40 +581,6 @@ function checkListeningAnswers() {
         document.getElementById('statScore').innerText = score;
     } else {
         feedback.innerHTML = "<span style='color:var(--danger)'>Some highlighted fields have errors. Listen again and try!</span>";
-    }
-}
-
-function generateQuiz() {
-    const quizArea = document.getElementById('quizArea');
-    currentQuizWord = dictionaryData[Math.floor(Math.random() * dictionaryData.length)];
-    
-    let options = [currentQuizWord.en];
-    while(options.length < 4) {
-        let rand = dictionaryData[Math.floor(Math.random() * dictionaryData.length)].en;
-        if(!options.includes(rand)) options.push(rand);
-    }
-    options.sort(() => Math.random() - 0.5);
-
-    quizArea.innerHTML = `
-        <h3 style="font-size:1.1rem;">What is the English translation for:</h3>
-        <h2 style="font-size:1.3rem;">"${currentQuizWord.it}"</h2>
-        <div class="quiz-options">
-            ${options.map(opt => `<button class="quiz-btn" onclick="checkQuiz(this, '${opt}')">${opt}</button>`).join('')}
-        </div>
-        <p id="quizFeedback"></p>
-    `;
-}
-
-function checkQuiz(btn, selected) {
-    const feedback = document.getElementById('quizFeedback');
-    if (selected === currentQuizWord.en) {
-        btn.classList.add('correct');
-        feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉</strong>";
-        score += 10;
-        document.getElementById('statScore').innerText = score;
-    } else {
-        btn.classList.add('wrong');
-        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentQuizWord.en}</span>`;
     }
 }
 
