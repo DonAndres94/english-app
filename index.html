@@ -315,27 +315,27 @@
         </div>
     </div>
 
-    <!-- TAB 3: LISTENING -->
+    <!-- TAB 3: LISTENING (SOLO VIDEO IN INGLESE) -->
     <div id="listening" class="tab-content">
         <div class="card-box">
-            <h3>🎧 Ascolto Guidato da YouTube</h3>
+            <h3>🎧 English Audio & Video Practice</h3>
             <div class="controls" style="margin-top: 15px;">
-                <label for="listeningCategorySelect"><strong>Categoria:</strong></label>
+                <label for="listeningCategorySelect"><strong>Category:</strong></label>
                 <select id="listeningCategorySelect" onchange="changeListeningCategory()">
-                    <option value="music">🎵 Music</option>
-                    <option value="documentary">🌍 Documentary</option>
-                    <option value="podcast">🎙️ Interview / Podcast</option>
+                    <option value="music">🎵 Music (English Lyrics)</option>
+                    <option value="documentary">🌍 Documentary (Nature & Science)</option>
+                    <option value="podcast">🎙️ Interview / Podcast (TED & Talks)</option>
                 </select>
             </div>
 
             <div class="video-container" id="youtubeContainer"></div>
 
-            <p style="text-align: left; font-weight: bold; color: #555;">Completa le parole mancanti ascoltando (<span id="videoCounter">1/5</span>):</p>
+            <p style="text-align: left; font-weight: bold; color: #555;">Complete the missing words (<span id="videoCounter">1/4</span>):</p>
             <div id="listeningSentencesContainer"></div>
 
-            <button class="action-btn" onclick="checkListeningAnswers()">Verifica Risposte</button>
+            <button class="action-btn" onclick="checkListeningAnswers()">Check Answers</button>
             <br><br>
-            <button class="action-btn" style="background:#27AE60; border-color:#27AE60; color:white;" onclick="nextVideoInCategory()">🔄 Cambia Video in questa Categoria</button>
+            <button class="action-btn" style="background:#27AE60; border-color:#27AE60; color:white;" onclick="nextVideoInCategory()">🔄 Next Video</button>
             <p id="listeningFeedback"></p>
         </div>
     </div>
@@ -381,32 +381,32 @@ const dictionaryData = [
     { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere" }
 ];
 
-// Database esteso di video per garantire varietà di scelta nelle 3 categorie
+// Database con soli video in lingua inglese (Music, Documentary, Podcast/Interviews)
 const listeningDatabase = {
     music: [
         {
-            videoId: "fJ9rUzIMcZQ",
+            videoId: "fJ9rUzIMcZQ", // English Pop Track
             lines: [
                 "We have to <input class='blank-input' data-ans='improve'> our rhythm every single day.",
                 "You cannot <input class='blank-input' data-ans='avoid'> the truth when the music plays."
             ]
         },
         {
-            videoId: "kJQP7kiw5Fk",
+            videoId: "kJQP7kiw5Fk", // Global Hit English Song
             lines: [
                 "We will <input class='blank-input' data-ans='achieve'> greatness through our song.",
                 "It takes deep <input class='blank-input' data-ans='commitment'> to keep singing."
             ]
         },
         {
-            videoId: "3JZ_D3ELwOQ",
+            videoId: "3JZ_D3ELwOQ", // English Official Music Video
             lines: [
                 "Sometimes we need to <input class='blank-input' data-ans='adapt'> to new melodies.",
                 "Listen close and try to <input class='blank-input' data-ans='acquire'> the exact tone."
             ]
         },
         {
-            videoId: "OPf0YbXqDm0",
+            videoId: "OPf0YbXqDm0", // English Pop Hit
             lines: [
                 "Every single artist wants to <input class='blank-input' data-ans='accomplish'> success.",
                 "Never let fear <input class='blank-input' data-ans='challenge'> your creative passion."
@@ -415,28 +415,28 @@ const listeningDatabase = {
     ],
     documentary: [
         {
-            videoId: "J---aiyznGQ",
+            videoId: "J---aiyznGQ", // English Nature Documentary (NatGeo style)
             lines: [
                 "Wildlife must <input class='blank-input' data-ans='adapt'> to survive changing climates.",
                 "Researchers try to <input class='blank-input' data-ans='acquire'> accurate data from nature."
             ]
         },
         {
-            videoId: "C0DPdy98e4c",
+            videoId: "C0DPdy98e4c", // English Science Documentary clip
             lines: [
                 "We must <input class='blank-input' data-ans='address'> environmental challenges immediately.",
                 "Scientists work to <input class='blank-input' data-ans='establish'> new ecological reserves."
             ]
         },
         {
-            videoId: "9bZkp7q19f0",
+            videoId: "9bZkp7q19f0", // English Space/Science Video
             lines: [
                 "Explorers need to <input class='blank-input' data-ans='evaluate'> the terrain carefully.",
                 "We can <input class='blank-input' data-ans='expand'> our knowledge about remote habitats."
             ]
         },
         {
-            videoId: "ZZ5LpwO-An4",
+            videoId: "ZZ5LpwO-An4", // English Earth & Wildlife Documentary
             lines: [
                 "It is essential to <input class='blank-input' data-ans='handle'> natural resources wisely.",
                 "We must <input class='blank-input' data-ans='determine'> the impact of human activities."
@@ -445,28 +445,28 @@ const listeningDatabase = {
     ],
     podcast: [
         {
-            videoId: "5qap5aO4i9A",
+            videoId: "5qap5aO4i9A", // English TED Talk (Productivity)
             lines: [
                 "Successful leaders know how to <input class='blank-input' data-ans='handle'> high pressure.",
                 "We need to <input class='blank-input' data-ans='determine'> our priorities carefully."
             ]
         },
         {
-            videoId: "R_fZjGm2OrM",
+            videoId: "R_fZjGm2OrM", // English Motivational Speech / Interview
             lines: [
                 "You must <input class='blank-input' data-ans='accomplish'> your daily targets.",
                 "It takes true <input class='blank-input' data-ans='dedication'> to build a successful career."
             ]
         },
         {
-            videoId: "ZXsQAXx_ao0",
+            videoId: "ZXsQAXx_ao0", // English Leadership Podcast
             lines: [
                 "Great speakers always <input class='blank-input' data-ans='encourage'> their audience.",
                 "We should <input class='blank-input' data-ans='facilitate'> open discussions on important topics."
             ]
         },
         {
-            videoId: "L_LUpnjgPso",
+            videoId: "L_LUpnjgPso", // English Growth Mindset Talk
             lines: [
                 "Every professional must <input class='blank-input' data-ans='acknowledge'> their own mistakes.",
                 "Take time to <input class='blank-input' data-ans='evaluate'> your long term goals."
@@ -594,11 +594,11 @@ function checkWritingAnswer() {
     const feedback = document.getElementById('writingFeedback');
     
     if (input === currentWritingWord.en.toLowerCase()) {
-        feedback.innerHTML = "<strong style='color:var(--success)'>Esatto! 🎉 (+15 Punti)</strong>";
+        feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 (+15 Points)</strong>";
         score += 15;
         document.getElementById('statScore').innerText = score;
     } else {
-        feedback.innerHTML = `<span style='color:var(--danger)'>Sbagliato. Risposta: <strong>${currentWritingWord.en}</strong></span>`;
+        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. Word: <strong>${currentWritingWord.en}</strong></span>`;
     }
 }
 
@@ -616,7 +616,7 @@ function loadListeningExercise() {
 
     let linesHtml = "";
     currentEx.lines.forEach((line, index) => {
-        linesHtml += `<div class="listening-line"><strong>Frase ${index + 1}:</strong> ${line}</div>`;
+        linesHtml += `<div class="listening-line"><strong>Sentence ${index + 1}:</strong> ${line}</div>`;
     });
     document.getElementById('listeningSentencesContainer').innerHTML = linesHtml;
     document.getElementById('listeningFeedback').innerHTML = "";
@@ -652,11 +652,11 @@ function checkListeningAnswers() {
     });
 
     if(correct) {
-        feedback.innerHTML = "<strong style='color:var(--success)'>Tutte le frasi corrette! Ottimo lavoro! 🎉 (+15 Punti)</strong>";
+        feedback.innerHTML = "<strong style='color:var(--success)'>All sentences are correct! Great job! 🎉 (+15 Points)</strong>";
         score += 15;
         document.getElementById('statScore').innerText = score;
     } else {
-        feedback.innerHTML = "<span style='color:var(--danger)'>Ci sono alcuni errori nei campi evidenziati. Riascolta il video e riprova!</span>";
+        feedback.innerHTML = "<span style='color:var(--danger)'>Some highlighted fields have errors. Listen again and try!</span>";
     }
 }
 
@@ -672,7 +672,7 @@ function generateQuiz() {
     options.sort(() => Math.random() - 0.5);
 
     quizArea.innerHTML = `
-        <h3 style="font-size:1.1rem;">Qual è la traduzione in inglese di:</h3>
+        <h3 style="font-size:1.1rem;">What is the English translation for:</h3>
         <h2 style="font-size:1.3rem;">"${currentQuizWord.it}"</h2>
         <div class="quiz-options">
             ${options.map(opt => `<button class="quiz-btn" onclick="checkQuiz(this, '${opt}')">${opt}</button>`).join('')}
@@ -685,12 +685,12 @@ function checkQuiz(btn, selected) {
     const feedback = document.getElementById('quizFeedback');
     if (selected === currentQuizWord.en) {
         btn.classList.add('correct');
-        feedback.innerHTML = "<strong style='color:var(--success)'>Esatto! 🎉</strong>";
+        feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉</strong>";
         score += 10;
         document.getElementById('statScore').innerText = score;
     } else {
         btn.classList.add('wrong');
-        feedback.innerHTML = "<span style='color:var(--danger)'>Sbagliato. Era: ${currentQuizWord.en}</span>`;
+        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentQuizWord.en}</span>`;
     }
 }
 
