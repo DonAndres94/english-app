@@ -109,7 +109,6 @@
             box-sizing: border-box;
         }
 
-        /* Stile tabella desktop */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -155,6 +154,26 @@
             text-align: center;
         }
 
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Rapporto 16:9 */
+            height: 0;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
         .quiz-options {
             display: grid;
             grid-template-columns: 1fr;
@@ -188,11 +207,12 @@
         .wrong { background: var(--danger) !important; color: white !important; }
 
         .blank-input {
-            width: 90px;
+            width: 100px;
             padding: 4px;
             text-align: center;
             border: 1px solid var(--primary);
             border-radius: 4px;
+            font-size: 1rem;
         }
 
         /* Ottimizzazione Mobile (Responsive Cards per tabelle) */
@@ -234,7 +254,6 @@
                 border-bottom: none;
             }
             
-            /* Etichette automatiche per i campi su mobile */
             td:nth-of-type(1):before { content: "Inglese:"; font-weight: bold; color: #7F8C8D; }
             td:nth-of-type(2):before { content: "Pronuncia:"; font-weight: bold; color: #7F8C8D; }
             td:nth-of-type(3):before { content: "🇮🇹 Italiano:"; font-weight: bold; color: #7F8C8D; }
@@ -260,7 +279,7 @@
     <nav>
         <button class="active" onclick="switchTab('daily', event)">📅 Giorno</button>
         <button onclick="switchTab('writing', event)">✍️ Writing</button>
-        <button onclick="switchTab('listening', event)">🎧 Listening</button>
+        <button onclick="switchTab('listening', event)">🎧 Listening (YouTube)</button>
         <button onclick="switchTab('quiz', event)">🧠 Quiz</button>
         <button onclick="switchTab('repository', event)">📚 Dizionario</button>
     </nav>
@@ -289,16 +308,23 @@
         </div>
     </div>
 
-    <!-- TAB 3: LISTENING -->
+    <!-- TAB 3: LISTENING (CON VIDEO DI YOUTUBE) -->
     <div id="listening" class="tab-content">
         <div class="card-box">
-            <h3>🎧 Ascolta e Completa</h3>
-            <p>Ascolta la pronuncia e inserisci le parole mancanti:</p>
-            <button class="action-btn" onclick="speak('I want to accomplish my goals and improve every day')">🔊 Ascolta Frase</button>
-            <div style="margin:20px 0; font-size:1rem; line-height: 2;">
-                I want to <input class="blank-input" data-ans="accomplish"> my goals and <input class="blank-input" data-ans="improve"> every day.
+            <h3>🎧 Ascolta il video e Completa</h3>
+            <p>Guarda il video di YouTube e inserisci le parole mancanti:</p>
+            
+            <div class="video-container" id="youtubeContainer">
+                <!-- Il video viene inserito dinamicamente via JS -->
             </div>
+
+            <div id="listeningSentenceContainer" style="margin:20px 0; font-size:1.1rem; line-height: 2.2;">
+                <!-- La frase con i campi di input viene generata dinamicamente -->
+            </div>
+
             <button class="action-btn" onclick="checkListeningAnswers()">Verifica Risposte</button>
+            <br><br>
+            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="loadNewListeningExercise()">Cambia Video/Frase</button>
             <p id="listeningFeedback"></p>
         </div>
     </div>
@@ -344,9 +370,26 @@ const dictionaryData = [
     { day: 1, category: "Azioni e Decisioni", en: "Facilitate", fig: "fa-sí-li-teit", it: "Facilitare", es: "Facilitar", da: "Facilitere" }
 ];
 
+// Lista di esercizi di ascolto basati sui video di YouTube e parole del dizionario
+const listeningExercises = [
+    {
+        videoId: "kJQP7kiw5Fk", // Esempio: Despacito o un video di inglese (puoi inserire qualsiasi ID YouTube)
+        template: "We need to <input class='blank-input' data-ans='improve'> our strategy and <input class='blank-input' data-ans='accomplish'> all targets."
+    },
+    {
+        videoId: "3JZ_D3ELwOQ", 
+        template: "It is hard to <input class='blank-input' data-ans='handle'> this crisis and <input class='blank-input' data-ans='avoid'> mistakes."
+    },
+    {
+        videoId: "fJ9rUzIMcZQ",
+        template: "You must <input class='blank-input' data-ans='acquire'> new skills and <input class='blank-input' data-ans='adapt'> quickly."
+    }
+];
+
 let score = 0;
 let currentWritingWord = null;
 let currentQuizWord = null;
+let currentListeningIndex = 0;
 
 document.getElementById('statTotal').innerText = dictionaryData.length;
 
@@ -363,7 +406,6 @@ function initCategorySelect() {
 
 function loadDailyCards() {
     const words = dictionaryData.filter(w => w.day === 1);
-    
     let html = `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Spagnolo</th><th>🇩🇰 Danese</th></tr></thead><tbody>`;
     words.forEach(w => {
         html += `<tr>
@@ -380,7 +422,6 @@ function loadDailyCards() {
 
 function renderRepository(words) {
     const container = document.getElementById('repoTableContainer');
-    
     if (words.length === 0) {
         container.innerHTML = `<p style="text-align: center; color: var(--danger); font-weight: bold; margin-top: 20px;">Parola non presente</p>`;
         return;
@@ -416,7 +457,6 @@ function renderRepository(words) {
         });
         html += `</tbody></table>`;
     }
-
     container.innerHTML = html;
 }
 
@@ -432,10 +472,8 @@ function filterRepository() {
             w.da.toLowerCase().includes(search);
 
         const matchesCategory = selectedCategory === "" || w.category === selectedCategory;
-
         return matchesSearch && matchesCategory;
     });
-    
     renderRepository(filtered);
 }
 
@@ -453,6 +491,7 @@ function switchTab(tabId, event) {
 
     if (tabId === 'quiz') generateQuiz();
     if (tabId === 'writing') generateWritingExercise();
+    if (tabId === 'listening') loadNewListeningExercise();
 }
 
 function generateWritingExercise() {
@@ -476,8 +515,23 @@ function checkWritingAnswer() {
     }
 }
 
+// Gestione dell'esercizio Listening con YouTube
+function loadNewListeningExercise() {
+    currentListeningIndex = Math.floor(Math.random() * listeningExercises.length);
+    const ex = listeningExercises[currentListeningIndex];
+
+    // Inserisce il video di YouTube
+    document.getElementById('youtubeContainer').innerHTML = `
+        <iframe src="https://www.youtube.com/embed/${ex.videoId}" allowfullscreen></iframe>
+    `;
+
+    // Inserisce la frase con i campi di input
+    document.getElementById('listeningSentenceContainer').innerHTML = ex.template;
+    document.getElementById('listeningFeedback').innerHTML = "";
+}
+
 function checkListeningAnswers() {
-    const inputs = document.querySelectorAll('.blank-input');
+    const inputs = document.querySelectorAll('#listeningSentenceContainer .blank-input');
     const feedback = document.getElementById('listeningFeedback');
     let correct = true;
     
@@ -485,16 +539,20 @@ function checkListeningAnswers() {
         const expected = input.getAttribute('data-ans').toLowerCase();
         if (input.value.trim().toLowerCase() === expected) {
             input.style.borderColor = "var(--success)";
+            input.style.backgroundColor = "#e8f8f0";
         } else {
             input.style.borderColor = "var(--danger)";
+            input.style.backgroundColor = "#fdeed9";
             correct = false;
         }
     });
 
     if(correct) {
-        feedback.innerHTML = "<strong style='color:var(--success)'>Tutto corretto! 🎉</strong>";
+        feedback.innerHTML = "<strong style='color:var(--success)'>Tutto corretto! Ottimo ascolto! 🎉 (+10 Punti)</strong>";
+        score += 10;
+        document.getElementById('statScore').innerText = score;
     } else {
-        feedback.innerHTML = "<span style='color:var(--danger)'>Controlla i campi evidenziati in rosso.</span>";
+        feedback.innerHTML = "<span style='color:var(--danger)'>Alcuni campi non sono corretti. Riprova ad ascoltare il video!</span>";
     }
 }
 
@@ -537,6 +595,7 @@ initCategorySelect();
 loadDailyCards();
 renderRepository(dictionaryData);
 generateWritingExercise();
+loadNewListeningExercise();
 </script>
 </body>
 </html>
