@@ -20,7 +20,7 @@
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 10px;
+            padding: 5px;
             display: flex;
             justify-content: center;
         }
@@ -39,30 +39,31 @@
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
         }
 
-        h1 { margin: 0; font-size: 1.3rem; }
+        h1 { margin: 0; font-size: 1.2rem; }
 
         nav {
             display: flex;
             background: #EAECEE;
             border-bottom: 1px solid #DDD;
-            flex-wrap: wrap;
+            overflow-x: auto;
+            white-space: nowrap;
         }
 
         nav button {
             flex: 1;
-            padding: 12px 4px;
+            padding: 10px 8px;
             border: none;
             background: none;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: bold;
             color: #7F8C8D;
             cursor: pointer;
             transition: 0.3s;
-            min-width: 50px;
+            min-width: 65px;
         }
 
         nav button.active {
@@ -72,7 +73,7 @@
         }
 
         .tab-content {
-            padding: 15px;
+            padding: 12px;
             display: none;
         }
 
@@ -82,35 +83,42 @@
 
         .controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
             align-items: center;
             flex-wrap: wrap;
         }
 
         select, input, textarea {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #CCC;
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             flex: 1;
-            min-width: 150px;
+            min-width: 140px;
             box-sizing: border-box;
             font-family: inherit;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            margin-bottom: 20px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            min-width: 500px;
         }
 
         th, td {
             text-align: left;
-            padding: 10px;
+            padding: 8px;
             border-bottom: 1px solid #EEE;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         th { background-color: #F8F9F9; }
@@ -118,11 +126,11 @@
         .category-title {
             background-color: var(--primary);
             color: white;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 6px;
-            margin-top: 20px;
-            margin-bottom: 8px;
-            font-size: 1rem;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
         }
 
         .audio-btn {
@@ -130,17 +138,17 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .card-box {
             background: #F8F9F9;
             border: 1px solid #E5E7E9;
             border-radius: 8px;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
         }
 
@@ -149,7 +157,7 @@
             width: 100%;
             padding-bottom: 56.25%;
             height: 0;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border-radius: 8px;
             overflow: hidden;
             background: #000;
@@ -166,20 +174,20 @@
 
         .listening-line {
             background: white;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #E5E7E9;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-align: left;
-            font-size: 1rem;
-            line-height: 1.8;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
         .quiz-options {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
         @media (min-width: 600px) {
@@ -189,12 +197,12 @@
         }
 
         .quiz-btn, .action-btn {
-            padding: 12px;
+            padding: 10px;
             border: 1px solid var(--primary);
             background: white;
             color: var(--primary);
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             width: 100%;
         }
@@ -208,46 +216,46 @@
         .wrong { background: var(--danger) !important; color: white !important; }
 
         .blank-input {
-            width: 90px;
+            width: 80px;
             padding: 4px;
             text-align: center;
             border: 1px solid var(--primary);
             border-radius: 4px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 12px;
         }
         @media(min-width: 600px) {
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
         .stat-card {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #E5E7E9;
             text-align: center;
         }
-        .stat-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #7F8C8D; }
-        .stat-card .value { font-size: 1.8rem; font-weight: bold; color: var(--primary); }
+        .stat-card h3 { margin: 0 0 8px 0; font-size: 0.85rem; color: #7F8C8D; }
+        .stat-card .value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
 
         .writing-header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: white;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid #E5E7E9;
-            margin-bottom: 15px;
-            font-size: 0.95rem;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
             font-weight: bold;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
 
         /* CALENDAR STYLES */
@@ -255,31 +263,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
+            gap: 4px;
             text-align: center;
         }
         .calendar-day-name {
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #7F8C8D;
-            padding-bottom: 5px;
+            padding-bottom: 4px;
         }
         .calendar-day {
             background: white;
             border: 1px solid #E5E7E9;
             border-radius: 6px;
-            min-height: 55px;
-            padding: 5px;
+            min-height: 48px;
+            padding: 4px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         .calendar-day.active-day {
             background: #E8F8F0;
@@ -291,9 +299,9 @@
         .activity-badge {
             background: var(--success);
             color: white;
-            font-size: 0.65rem;
-            padding: 2px 5px;
-            border-radius: 10px;
+            font-size: 0.6rem;
+            padding: 1px 4px;
+            border-radius: 8px;
             font-weight: bold;
         }
     </style>
@@ -308,40 +316,40 @@
     <nav>
         <button class="active" onclick="switchTab('daily', event)">📅 Day</button>
         <button onclick="switchTab('writing', event)">✍️ Writing</button>
-        <button onclick="switchTab('listening', event)">🎧 Listening</button>
+        <button onclick="switchTab('listening', event)">🎧 Listen</button>
         <button onclick="switchTab('repository', event)">📚 Dict</button>
-        <button onclick="switchTab('calendarTab', event)">🗓️ Calendar</button>
+        <button onclick="switchTab('calendarTab', event)">🗓️ Cal</button>
         <button onclick="switchTab('stats', event)">📊 Stats</button>
     </nav>
 
     <!-- TAB 1: SCHEDA GIORNO -->
     <div id="daily" class="tab-content active">
         <div class="controls">
-            <h2 style="font-size: 1.1rem; margin:0;">📅 Daily Program</h2>
+            <h2 style="font-size: 1rem; margin:0;">📅 Daily Program</h2>
         </div>
-        <div id="dailyTableContainer"></div>
+        <div class="table-responsive" id="dailyTableContainer"></div>
     </div>
 
     <!-- TAB 2: WRITING & PRACTICE -->
     <div id="writing" class="tab-content">
-        <div class="controls" style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #E5E7E9; justify-content: space-between;">
+        <div class="controls" style="background: white; padding: 8px; border-radius: 8px; border: 1px solid #E5E7E9; justify-content: space-between;">
             <div>
                 <label for="writingModeSelect"><strong>Mode:</strong></label>
                 <select id="writingModeSelect" onchange="toggleWritingMode()">
                     <option value="practice">Standard Exercises</option>
-                    <option value="reviewErrors">🔄 Review My Top Errors</option>
-                    <option value="essay">✍️ Free Writing & Essay Correction</option>
+                    <option value="reviewErrors">🔄 Review Errors</option>
+                    <option value="essay">✍️ Free Writing & Essay</option>
                 </select>
             </div>
-            <div id="practiceControls" style="display:flex; gap:10px; align-items:center; flex:1; justify-content: flex-end;">
+            <div id="practiceControls" style="display:flex; gap:8px; align-items:center; flex:1; justify-content: flex-end;">
                 <label for="sessionSizeSelect"><strong>Size:</strong></label>
-                <select id="sessionSizeSelect" style="max-width: 140px;" onchange="restartWritingSession()">
+                <select id="sessionSizeSelect" style="max-width: 120px;" onchange="restartWritingSession()">
                     <option value="10">10 Questions</option>
                     <option value="20" selected>20 Questions</option>
                     <option value="40">40 Questions</option>
                     <option value="all">All Words</option>
                 </select>
-                <button class="action-btn" style="width: auto; padding: 8px 15px;" onclick="restartWritingSession()">🔄 Restart</button>
+                <button class="action-btn" style="width: auto; padding: 6px 12px;" onclick="restartWritingSession()">🔄</button>
             </div>
         </div>
 
@@ -353,19 +361,19 @@
     <!-- TAB 3: LISTENING -->
     <div id="listening" class="tab-content">
         <div class="card-box">
-            <h3>🎧 English Audio & Video Practice</h3>
-            <div class="controls" style="margin-top: 15px;">
+            <h3 style="font-size: 1rem; margin-top:0;">🎧 English Audio & Video Practice</h3>
+            <div class="controls" style="margin-top: 10px;">
                 <label for="listeningCategorySelect"><strong>Category:</strong></label>
                 <select id="listeningCategorySelect" onchange="changeListeningCategory()">
-                    <option value="music">🎵 Music (English Lyrics)</option>
-                    <option value="documentary">🌍 Documentary (Nature & Science)</option>
-                    <option value="podcast">🎙️ Interview / Podcast (TED & Talks)</option>
+                    <option value="music">🎵 Music</option>
+                    <option value="documentary">🌍 Documentary</option>
+                    <option value="podcast">🎙️ Podcast</option>
                 </select>
             </div>
 
             <div class="video-container" id="youtubeContainer"></div>
 
-            <p style="text-align: left; font-weight: bold; color: #555;">Complete the missing words (<span id="videoCounter">1/4</span>):</p>
+            <p style="text-align: left; font-weight: bold; color: #555; font-size: 0.9rem;">Complete missing words (<span id="videoCounter">1/4</span>):</p>
             <div id="listeningSentencesContainer"></div>
 
             <button class="action-btn" onclick="checkListeningAnswers()">Check Answers</button>
@@ -383,22 +391,22 @@
                 <option value="">📂 All categories</option>
             </select>
         </div>
-        <div id="repoTableContainer"></div>
+        <div class="table-responsive" id="repoTableContainer"></div>
     </div>
 
     <!-- TAB 5: CALENDAR & WEEKLY REPORT -->
     <div id="calendarTab" class="tab-content">
         <div class="card-box">
             <div class="calendar-header">
-                <button class="action-btn" style="width: auto; padding: 5px 10px;" onclick="changeMonth(-1)">◀ Prev</button>
-                <h3 id="calendarMonthTitle" style="margin: 0;">Month Year</h3>
-                <button class="action-btn" style="width: auto; padding: 5px 10px;" onclick="changeMonth(1)">Next ▶</button>
+                <button class="action-btn" style="width: auto; padding: 4px 8px;" onclick="changeMonth(-1)">◀ Prev</button>
+                <h3 id="calendarMonthTitle" style="margin: 0; font-size: 1rem;">Month Year</h3>
+                <button class="action-btn" style="width: auto; padding: 4px 8px;" onclick="changeMonth(1)">Next ▶</button>
             </div>
             
             <div class="calendar-grid" id="calendarGridContainer"></div>
             
-            <div style="margin-top: 25px; text-align: left; background: white; padding: 15px; border-radius: 8px; border: 1px solid #E5E7E9;">
-                <h3 style="color: var(--primary); margin-top: 0;">📈 Weekly Performance Report</h3>
+            <div style="margin-top: 20px; text-align: left; background: white; padding: 12px; border-radius: 8px; border: 1px solid #E5E7E9;">
+                <h3 style="color: var(--primary); margin-top: 0; font-size: 1rem;">📈 Weekly Performance Report</h3>
                 <div id="weeklyReportContent"></div>
             </div>
         </div>
@@ -407,7 +415,7 @@
     <!-- TAB 6: STATS -->
     <div id="stats" class="tab-content">
         <div class="card-box">
-            <h3>📊 Learning Statistics & Error Ranking</h3>
+            <h3 style="font-size: 1rem; margin-top:0;">📊 Learning Statistics & Error Ranking</h3>
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Dictionary Words</h3>
@@ -427,9 +435,9 @@
                 </div>
             </div>
             
-            <div style="margin-top: 20px; text-align: left;">
-                <h3 style="color: #7F8C8D; margin-bottom: 10px;">⚠️ Top 10 Error Words (Cumulative)</h3>
-                <div id="errorRankingContainer"></div>
+            <div style="margin-top: 15px; text-align: left;">
+                <h3 style="color: #7F8C8D; margin-bottom: 8px; font-size: 0.9rem;">⚠️ Top 10 Error Words (Cumulative)</h3>
+                <div class="table-responsive" id="errorRankingContainer"></div>
             </div>
         </div>
     </div>
@@ -529,17 +537,16 @@ function toggleWritingMode() {
     if (mode === 'essay') {
         practiceControls.style.display = 'none';
         
-        // Seleziona un prompt giornaliero basato sul giorno dell'anno
         const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
         const currentPrompt = essayPromptsList[dayOfYear % essayPromptsList.length];
 
         area.innerHTML = `
-            <div style="text-align: left; margin-bottom: 12px;">
-                <h3 style="color: var(--primary); margin: 0 0 5px 0;">✍️ Daily Writing Prompt & Idea</h3>
-                <p style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9; font-size: 0.95rem; line-height: 1.5; color: #333; margin: 0 0 10px 0;">
+            <div style="text-align: left; margin-bottom: 10px;">
+                <h3 style="color: var(--primary); margin: 0 0 5px 0; font-size: 0.95rem;">✍️ Daily Writing Prompt & Idea</h3>
+                <p style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #E5E7E9; font-size: 0.9rem; line-height: 1.4; color: #333; margin: 0 0 8px 0;">
                     💡 <strong>Idea of the Day:</strong> ${currentPrompt.topic}
                 </p>
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #7F8C8D;">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #7F8C8D;">
                     <span>Obiettivo minimo: <strong id="minCharTarget">${currentPrompt.minChars}</strong> caratteri</span>
                     <span>Caratteri attuali: <strong id="charCounter" style="color: var(--danger);">0</strong></span>
                 </div>
@@ -547,7 +554,7 @@ function toggleWritingMode() {
             <textarea id="essayInput" rows="12" placeholder="Type your essay or paragraph in English here..." oninput="updateEssayCharCount(${currentPrompt.minChars})"></textarea>
             <br><br>
             <button class="action-btn" onclick="submitEssayForCorrection(${currentPrompt.minChars})">🔍 Analyze & Correct Text</button>
-            <div id="essayFeedback" style="margin-top: 15px; text-align: left;"></div>
+            <div id="essayFeedback" style="margin-top: 12px; text-align: left;"></div>
         `;
     } else if (mode === 'reviewErrors') {
         practiceControls.style.display = 'none';
@@ -575,7 +582,7 @@ function startErrorReviewSession() {
     if (errorWords.length === 0) {
         document.getElementById('writingArea').innerHTML = `
             <h3>🔄 Review My Top Errors</h3>
-            <p style="color: #7F8C8D; margin-top: 15px;">No errors recorded yet! Complete some standard writing exercises first to build your error review list.</p>
+            <p style="color: #7F8C8D; margin-top: 12px; font-size: 0.9rem;">No errors recorded yet! Complete some standard writing exercises first.</p>
         `;
         return;
     }
@@ -604,11 +611,11 @@ function submitEssayForCorrection(minChars) {
     }
 
     feedback.innerHTML = `
-        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #E5E7E9;">
-            <h4 style="color: var(--success); margin-top:0;">✅ Correction & Feedback Report</h4>
-            <p><strong>Grammar & Style Check:</strong> Well written text! Excellent structure and coherence.</p>
-            <p style="color: var(--primary); font-weight: bold;">📦 Dictionary Update:</p>
-            <ul id="extractedWordsList" style="margin: 5px 0; padding-left: 20px;"></ul>
+        <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9;">
+            <h4 style="color: var(--success); margin-top:0; font-size: 0.95rem;">✅ Correction & Feedback Report</h4>
+            <p style="font-size: 0.9rem;"><strong>Grammar & Style Check:</strong> Well written text! Excellent structure and coherence.</p>
+            <p style="color: var(--primary); font-weight: bold; font-size: 0.9rem;">📦 Dictionary Update:</p>
+            <ul id="extractedWordsList" style="margin: 5px 0; padding-left: 20px; font-size: 0.9rem;"></ul>
         </div>
     `;
 
@@ -708,7 +715,7 @@ function loadDailyCards() {
 function renderRepository(words) {
     const container = document.getElementById('repoTableContainer');
     if (words.length === 0) {
-        container.innerHTML = `<p style="text-align: center; color: var(--danger); font-weight: bold; margin-top: 20px;">No words found</p>`;
+        container.innerHTML = `<p style="text-align: center; color: var(--danger); font-weight: bold; margin-top: 15px;">No words found</p>`;
         return;
     }
 
@@ -797,7 +804,7 @@ function generateWritingExercise() {
     if (practiceList.length === 0) {
         area.innerHTML = `
             <h3>🎉 Session Completed!</h3>
-            <p>You have successfully completed all questions in this session.</p>
+            <p style="font-size: 0.9rem;">You have successfully completed all questions in this session.</p>
             <br>
             <button class="action-btn" onclick="restartWritingSession()">Start New Session</button>
         `;
@@ -815,9 +822,9 @@ function generateWritingExercise() {
 
     if (currentWritingType === 1) {
         area.innerHTML = progressHtml + `
-            <h3>✍️ Exercise: Translate to English</h3>
-            <p>Translate this Italian expression:</p>
-            <h2 style="color: var(--primary);">${currentWritingData.it}</h2>
+            <h3 style="font-size: 1rem;">✍️ Exercise: Translate to English</h3>
+            <p style="font-size: 0.9rem;">Translate this Italian expression:</p>
+            <h2 style="color: var(--primary); font-size: 1.2rem;">${currentWritingData.it}</h2>
             <p><small>Pronunciation: <em>${currentWritingData.fig}</em></small></p>
             <input type="text" id="writingInput" placeholder="Type in English..." autocomplete="off">
             <br><br>
@@ -830,9 +837,9 @@ function generateWritingExercise() {
             `Complete sentence for: ${currentWritingData.en} (_____)`;
             
         area.innerHTML = progressHtml + `
-            <h3>✍️ Exercise: Complete the Sentence</h3>
-            <p>Fill in the blank with the correct English word:</p>
-            <h3 style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9;">"${sentenceWithBlank}"</h3>
+            <h3 style="font-size: 1rem;">✍️ Exercise: Complete the Sentence</h3>
+            <p style="font-size: 0.9rem;">Fill in the blank with the correct English word:</p>
+            <h3 style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #E5E7E9; font-size: 0.95rem;">"${sentenceWithBlank}"</h3>
             <p><small>Italian hint: <strong>${currentWritingData.it}</strong></small></p>
             <input type="text" id="writingInput" placeholder="Missing word..." autocomplete="off">
             <br><br>
@@ -848,9 +855,9 @@ function generateWritingExercise() {
         options.sort(() => Math.random() - 0.5);
 
         area.innerHTML = progressHtml + `
-            <h3>✍️ Exercise: Match the Translation</h3>
-            <p>Select the correct English word for:</p>
-            <h2 style="color: var(--primary);">"${currentWritingData.it}"</h2>
+            <h3 style="font-size: 1rem;">✍️ Exercise: Match the Translation</h3>
+            <p style="font-size: 0.9rem;">Select the correct English word for:</p>
+            <h2 style="color: var(--primary); font-size: 1.2rem;">"${currentWritingData.it}"</h2>
             <div class="quiz-options">
                 ${options.map(opt => `<button class="quiz-btn" onclick="checkMatchingAnswer(this, '${opt}')">${opt}</button>`).join('')}
             </div>
@@ -1045,10 +1052,10 @@ function renderWeeklyReport() {
     }
 
     reportContainer.innerHTML = `
-        <p style="margin: 5px 0;">✨ <strong>Attività negli ultimi 7 giorni:</strong> ${totalWeekExercises} esercizi completati.</p>
-        <p style="margin: 5px 0;">🔥 <strong>Giorni attivi questa settimana:</strong> ${activeDaysCount} su 7 giorni.</p>
-        <p style="margin: 5px 0;">🎯 <strong>Media giornaliera:</strong> ${(totalWeekExercises / 7).toFixed(1)} esercizi/giorno.</p>
-        <p style="font-size: 0.85rem; color: #7F8C8D; margin-top: 10px;">Ottimo lavoro! Continua a praticare regolarmente per mantenere alta la costanza nello studio dell'inglese.</p>
+        <p style="margin: 4px 0; font-size: 0.9rem;">✨ <strong>Attività negli ultimi 7 giorni:</strong> ${totalWeekExercises} esercizi completati.</p>
+        <p style="margin: 4px 0; font-size: 0.9rem;">🔥 <strong>Giorni attivi questa settimana:</strong> ${activeDaysCount} su 7 giorni.</p>
+        <p style="margin: 4px 0; font-size: 0.9rem;">🎯 <strong>Media giornaliera:</strong> ${(totalWeekExercises / 7).toFixed(1)} esercizi/giorno.</p>
+        <p style="font-size: 0.8rem; color: #7F8C8D; margin-top: 8px;">Ottimo lavoro! Continua a praticare regolarmente.</p>
     `;
 }
 
@@ -1066,13 +1073,13 @@ function updateStatsDisplay() {
     const rankingContainer = document.getElementById('errorRankingContainer');
     
     if (sortedErrors.length === 0) {
-        rankingContainer.innerHTML = `<p style="color: #7F8C8D; font-style: italic; font-size: 0.9rem;">No errors recorded yet. Keep practicing!</p>`;
+        rankingContainer.innerHTML = `<p style="color: #7F8C8D; font-style: italic; font-size: 0.85rem;">No errors recorded yet. Keep practicing!</p>`;
     } else {
         let rankHtml = `<table><thead><tr><th>Rank</th><th>Word</th><th>Errors</th></tr></thead><tbody>`;
         sortedErrors.forEach(([word, count], idx) => {
             rankHtml += `<tr>
                 <td>#${idx + 1}</td>
-                <td><strong>${word}</strong> <button class="audio-btn" onclick="speak('${word}')" style="width:22px; height:22px; font-size:0.7rem;">🔊</button></td>
+                <td><strong>${word}</strong> <button class="audio-btn" onclick="speak('${word}')" style="width:20px; height:20px; font-size:0.65rem;">🔊</button></td>
                 <td><span style="color:var(--danger); font-weight:bold;">${count}</span></td>
             </tr>`;
         });
