@@ -45,17 +45,6 @@
 
         h1 { margin: 0; font-size: 1.3rem; }
 
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            background: #34495E;
-            color: white;
-            padding: 8px;
-            font-size: 0.8rem;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
         nav {
             display: flex;
             background: #EAECEE;
@@ -65,7 +54,7 @@
 
         nav button {
             flex: 1;
-            padding: 12px 8px;
+            padding: 12px 6px;
             border: none;
             background: none;
             font-size: 0.75rem;
@@ -73,7 +62,7 @@
             color: #7F8C8D;
             cursor: pointer;
             transition: 0.3s;
-            min-width: 70px;
+            min-width: 60px;
         }
 
         nav button.active {
@@ -225,6 +214,25 @@
             border-radius: 4px;
             font-size: 0.95rem;
         }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        @media(min-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #E5E7E9;
+            text-align: center;
+        }
+        .stat-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #7F8C8D; }
+        .stat-card .value { font-size: 1.8rem; font-weight: bold; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -234,17 +242,12 @@
         <h1>English Vocabulary & Skills</h1>
     </header>
 
-    <div class="stats-bar">
-        <div>📈 Words: <span id="statTotal">0</span></div>
-        <div>🎯 Points: <span id="statScore">0</span></div>
-        <div>🔥 Day 1</div>
-    </div>
-
     <nav>
         <button class="active" onclick="switchTab('daily', event)">📅 Day</button>
-        <button onclick="switchTab('writing', event)">✍️ Writing & Practice</button>
+        <button onclick="switchTab('writing', event)">✍️ Writing</button>
         <button onclick="switchTab('listening', event)">🎧 Listening</button>
         <button onclick="switchTab('repository', event)">📚 Dictionary</button>
+        <button onclick="switchTab('stats', event)">📊 Stats</button>
     </nav>
 
     <!-- TAB 1: SCHEDA GIORNO -->
@@ -297,6 +300,31 @@
         </div>
         <div id="repoTableContainer"></div>
     </div>
+
+    <!-- TAB 5: STATS -->
+    <div id="stats" class="tab-content">
+        <div class="card-box">
+            <h3>📊 Learning Statistics Sheet</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Dictionary Words</h3>
+                    <div class="value" id="statTotalWords">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Exercises Completed</h3>
+                    <div class="value" id="statCompleted">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Words in Review Queue (Errors)</h3>
+                    <div class="value" id="statQueueSize">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Review Session Progress</h3>
+                    <div class="value" id="statProgress">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -344,12 +372,26 @@ const listeningDatabase = {
     ]
 };
 
-let score = 0;
+// Gestione della coda di apprendimento (Spaced repetition / Coda di recupero)
+let practiceQueue = [];
+let completedCount = 0;
 let currentWritingType = 1;
 let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
 
-document.getElementById('statTotal').innerText = dictionaryData.length;
+function initApp() {
+    initCategorySelect();
+    loadDailyCards();
+    renderRepository(dictionaryData);
+    resetPracticeQueue();
+    updateStatsDisplay();
+}
+
+function resetPracticeQueue() {
+    practiceQueue = [...dictionaryData];
+    // Mescola casualmente la coda iniziale
+    practiceQueue.sort(() => Math.random() - 0.5);
+}
 
 function initCategorySelect() {
     const categories = [...new Set(dictionaryData.map(w => w.category))].sort();
@@ -441,41 +483,42 @@ function switchTab(tabId, event) {
 
     if (tabId === 'writing') generateWritingExercise();
     if (tabId === 'listening') loadListeningExercise();
+    if (tabId === 'stats') updateStatsDisplay();
 }
 
-// Generazione dinamica dei vari tipi di esercizio nella sezione Writing
 function generateWritingExercise() {
     const area = document.getElementById('writingArea');
-    currentWritingData = dictionaryData[Math.floor(Math.random() * dictionaryData.length)];
     
-    // Sceglie casualmente tra 3 tipologie di esercizio: 1 = Traduzione, 2 = Completamento frase, 3 = Associazione opzioni multiple
+    // Se la coda è vuota, la ricarichiamo per continuare il ciclo
+    if (practiceQueue.length === 0) {
+        resetPracticeQueue();
+    }
+
+    // Prende la prima parola in coda
+    currentWritingData = practiceQueue[0];
     currentWritingType = Math.floor(Math.random() * 3) + 1;
 
     if (currentWritingType === 1) {
         area.innerHTML = `
-            <h3>✍️ Exercise 1: Translate to English</h3>
+            <h3>✍️ Exercise: Translate to English</h3>
             <p>Translate this Italian expression:</p>
             <h2 style="color: var(--primary);">${currentWritingData.it}</h2>
             <p><small>Pronunciation: <em>${currentWritingData.fig}</em></small></p>
-            <input type="text" id="writingInput" placeholder="Type in English...">
+            <input type="text" id="writingInput" placeholder="Type in English..." autocomplete="off">
             <br><br>
             <button class="action-btn" onclick="checkWritingAnswer()">Check Answer</button>
-            <br><br>
-            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Next Exercise</button>
             <p id="writingFeedback"></p>
         `;
     } else if (currentWritingType === 2) {
         let sentenceWithBlank = currentWritingData.sentence.replace(currentWritingData.en, "_____");
         area.innerHTML = `
-            <h3>✍️ Exercise 2: Complete the Sentence</h3>
+            <h3>✍️ Exercise: Complete the Sentence</h3>
             <p>Fill in the blank with the correct English word:</p>
             <h3 style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #E5E7E9;">"${sentenceWithBlank}"</h3>
             <p><small>Italian hint: <strong>${currentWritingData.it}</strong></small></p>
-            <input type="text" id="writingInput" placeholder="Missing word...">
+            <input type="text" id="writingInput" placeholder="Missing word..." autocomplete="off">
             <br><br>
             <button class="action-btn" onclick="checkWritingAnswer()">Check Answer</button>
-            <br><br>
-            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Next Exercise</button>
             <p id="writingFeedback"></p>
         `;
     } else {
@@ -487,43 +530,54 @@ function generateWritingExercise() {
         options.sort(() => Math.random() - 0.5);
 
         area.innerHTML = `
-            <h3>✍️ Exercise 3: Match the Translation</h3>
+            <h3>✍️ Exercise: Match the Translation</h3>
             <p>Select the correct English word for:</p>
             <h2 style="color: var(--primary);">"${currentWritingData.it}"</h2>
             <div class="quiz-options">
                 ${options.map(opt => `<button class="quiz-btn" onclick="checkMatchingAnswer(this, '${opt}')">${opt}</button>`).join('')}
             </div>
-            <br>
-            <button class="action-btn" style="background:#7F8C8D; border-color:#7F8C8D; color:white;" onclick="generateWritingExercise()">Next Exercise</button>
             <p id="writingFeedback"></p>
         `;
     }
 }
 
 function checkWritingAnswer() {
-    const input = document.getElementById('writingInput').value.trim().toLowerCase();
+    const inputField = document.getElementById('writingInput');
+    const input = inputField.value.trim().toLowerCase();
     const feedback = document.getElementById('writingFeedback');
     
     if (input === currentWritingData.en.toLowerCase()) {
-        feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 (+15 Points)</strong>";
-        score += 15;
-        document.getElementById('statScore').innerText = score;
+        // Risposta corretta: rimuove la parola dalla coda e incrementa i completati
+        practiceQueue.shift();
+        completedCount++;
+        feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 Loading next...</strong>";
+        setTimeout(generateWritingExercise, 1000);
     } else {
-        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong></span>`;
+        // Risposta errata: sposta la parola in fondo alla coda per riproporla dopo
+        const wrongWord = practiceQueue.shift();
+        practiceQueue.push(wrongWord);
+        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong>. It will be repeated later.</span>`;
+        setTimeout(generateWritingExercise, 2000);
     }
+    updateStatsDisplay();
 }
 
 function checkMatchingAnswer(btn, selected) {
     const feedback = document.getElementById('writingFeedback');
     if (selected === currentWritingData.en) {
         btn.classList.add('correct');
-        feedback.innerHTML = "<strong style='color:var(--success)'>Correct match! 🎉 (+10 Points)</strong>";
-        score += 10;
-        document.getElementById('statScore').innerText = score;
+        practiceQueue.shift();
+        completedCount++;
+        feedback.innerHTML = "<strong style='color:var(--success)'>Correct match! 🎉 Loading next...</strong>";
+        setTimeout(generateWritingExercise, 1000);
     } else {
         btn.classList.add('wrong');
-        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentWritingData.en}</span>`;
+        const wrongWord = practiceQueue.shift();
+        practiceQueue.push(wrongWord);
+        feedback.innerHTML = `<span style='color:var(--danger)'>Wrong. It was: ${currentWritingData.en}. It will be repeated later.</span>`;
+        setTimeout(generateWritingExercise, 2000);
     }
+    updateStatsDisplay();
 }
 
 function loadListeningExercise() {
@@ -576,18 +630,24 @@ function checkListeningAnswers() {
     });
 
     if(correct) {
-        feedback.innerHTML = "<strong style='color:var(--success)'>All sentences are correct! Great job! 🎉 (+15 Points)</strong>";
-        score += 15;
-        document.getElementById('statScore').innerText = score;
+        feedback.innerHTML = "<strong style='color:var(--success)'>All sentences are correct! Great job! 🎉</strong>";
+        completedCount++;
     } else {
         feedback.innerHTML = "<span style='color:var(--danger)'>Some highlighted fields have errors. Listen again and try!</span>";
     }
+    updateStatsDisplay();
 }
 
-initCategorySelect();
-loadDailyCards();
-renderRepository(dictionaryData);
-generateWritingExercise();
+function updateStatsDisplay() {
+    document.getElementById('statTotalWords').innerText = dictionaryData.length;
+    document.getElementById('statCompleted').innerText = completedCount;
+    document.getElementById('statQueueSize').innerText = practiceQueue.length;
+    
+    let progress = Math.round((completedCount / (completedCount + practiceQueue.length || 1)) * 100);
+    document.getElementById('statProgress').innerText = progress + "%";
+}
+
+initApp();
 </script>
 </body>
 </html>
