@@ -54,15 +54,15 @@
 
         nav button {
             flex: 1;
-            padding: 12px 6px;
+            padding: 12px 4px;
             border: none;
             background: none;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: bold;
             color: #7F8C8D;
             cursor: pointer;
             transition: 0.3s;
-            min-width: 60px;
+            min-width: 50px;
         }
 
         nav button.active {
@@ -249,6 +249,53 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
+        /* CALENDAR STYLES */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+        .calendar-day-name {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #7F8C8D;
+            padding-bottom: 5px;
+        }
+        .calendar-day {
+            background: white;
+            border: 1px solid #E5E7E9;
+            border-radius: 6px;
+            min-height: 55px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .calendar-day.active-day {
+            background: #E8F8F0;
+            border-color: var(--success);
+        }
+        .calendar-day.today {
+            border: 2px solid var(--primary);
+        }
+        .activity-badge {
+            background: var(--success);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -262,7 +309,8 @@
         <button class="active" onclick="switchTab('daily', event)">📅 Day</button>
         <button onclick="switchTab('writing', event)">✍️ Writing</button>
         <button onclick="switchTab('listening', event)">🎧 Listening</button>
-        <button onclick="switchTab('repository', event)">📚 Dictionary</button>
+        <button onclick="switchTab('repository', event)">📚 Dict</button>
+        <button onclick="switchTab('calendarTab', event)">🗓️ Calendar</button>
         <button onclick="switchTab('stats', event)">📊 Stats</button>
     </nav>
 
@@ -338,7 +386,25 @@
         <div id="repoTableContainer"></div>
     </div>
 
-    <!-- TAB 5: STATS -->
+    <!-- TAB 5: CALENDAR & WEEKLY REPORT -->
+    <div id="calendarTab" class="tab-content">
+        <div class="card-box">
+            <div class="calendar-header">
+                <button class="action-btn" style="width: auto; padding: 5px 10px;" onclick="changeMonth(-1)">◀ Prev</button>
+                <h3 id="calendarMonthTitle" style="margin: 0;">Month Year</h3>
+                <button class="action-btn" style="width: auto; padding: 5px 10px;" onclick="changeMonth(1)">Next ▶</button>
+            </div>
+            
+            <div class="calendar-grid" id="calendarGridContainer"></div>
+            
+            <div style="margin-top: 25px; text-align: left; background: white; padding: 15px; border-radius: 8px; border: 1px solid #E5E7E9;">
+                <h3 style="color: var(--primary); margin-top: 0;">📈 Weekly Performance Report</h3>
+                <div id="weeklyReportContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: STATS -->
     <div id="stats" class="tab-content">
         <div class="card-box">
             <h3>📊 Learning Statistics & Error Ranking</h3>
@@ -425,10 +491,12 @@ let totalSessionTarget = 20;
 let sessionCompletedCount = 0;
 let globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
 let errorTrackingCounts = JSON.parse(localStorage.getItem('eng_error_tracking')) || {};
+let activityLog = JSON.parse(localStorage.getItem('eng_activity_log')) || {}; // formato: {"YYYY-MM-DD": count}
 
 let currentWritingType = 1;
 let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
+let calendarCurrentDate = new Date();
 
 function initApp() {
     initCategorySelect();
@@ -436,6 +504,14 @@ function initApp() {
     renderRepository(dictionaryData);
     restartWritingSession();
     updateStatsDisplay();
+    renderCalendar();
+}
+
+function recordTodayActivity(count = 1) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    activityLog[todayStr] = (activityLog[todayStr] || 0) + count;
+    localStorage.setItem('eng_activity_log', JSON.stringify(activityLog));
+    renderCalendar();
 }
 
 function toggleWritingMode() {
@@ -472,9 +548,7 @@ function startErrorReviewSession() {
         return;
     }
 
-    // Filtra il dizionario prendendo solo le parole che hanno accumulato errori
     let errorItems = dictionaryData.filter(w => errorTrackingCounts[w.en] > 0);
-    // Ordina in base al numero di errori decrescente
     errorItems.sort((a, b) => errorTrackingCounts[b.en] - errorTrackingCounts[a.en]);
 
     practiceList = errorItems;
@@ -539,6 +613,7 @@ function submitEssayForCorrection() {
         listEl.appendChild(li);
     }
 
+    recordTodayActivity(3);
     renderRepository(dictionaryData);
     updateStatsDisplay();
 }
@@ -552,7 +627,6 @@ function restartWritingSession() {
     }
 
     sessionCompletedCount = 0;
-    
     let shuffled = [...dictionaryData].sort(() => Math.random() - 0.5);
     
     if (shuffled.length > totalSessionTarget) {
@@ -675,6 +749,7 @@ function switchTab(tabId, event) {
     }
     if (tabId === 'listening') loadListeningExercise();
     if (tabId === 'stats') updateStatsDisplay();
+    if (tabId === 'calendarTab') renderCalendar();
 }
 
 function generateWritingExercise() {
@@ -748,6 +823,7 @@ function generateWritingExercise() {
 function incrementCompletedCount() {
     globalCompletedCount++;
     localStorage.setItem('eng_completed_count', globalCompletedCount);
+    recordTodayActivity(1);
 }
 
 function registerError(wordStr) {
@@ -854,6 +930,92 @@ function checkListeningAnswers() {
     updateStatsDisplay();
 }
 
+// CALENDAR & REPORT FUNCTIONS
+function changeMonth(direction) {
+    calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + direction);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const year = calendarCurrentDate.getFullYear();
+    const month = calendarCurrentDate.getMonth();
+
+    const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    document.getElementById('calendarMonthTitle').innerText = `${monthNames[month]} ${year}`;
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    // Adatta per iniziare da Lunedì (0 = Lun, ..., 6 = Dom)
+    let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    let gridHtml = `
+        <div class="calendar-day-name">Lun</div>
+        <div class="calendar-day-name">Mar</div>
+        <div class="calendar-day-name">Mer</div>
+        <div class="calendar-day-name">Gio</div>
+        <div class="calendar-day-name">Ven</div>
+        <div class="calendar-day-name">Sab</div>
+        <div class="calendar-day-name">Dom</div>
+    `;
+
+    // Giorni vuoti del mese precedente
+    for (let i = 0; i < startDay; i++) {
+        gridHtml += `<div class="calendar-day" style="background: #F9FAFA; opacity: 0.4;"></div>`;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    for (let day = 1; day <= totalDays; day++) {
+        const dayFormatted = String(day).padStart(2, '0');
+        const monthFormatted = String(month + 1).padStart(2, '0');
+        const dateKey = `${year}-${monthFormatted}-${dayFormatted}`;
+        
+        const activityCount = activityLog[dateKey] || 0;
+        const isActive = activityCount > 0;
+        const isToday = dateKey === todayStr;
+
+        let classes = "calendar-day";
+        if (isActive) classes += " active-day";
+        if (isToday) classes += " today";
+
+        gridHtml += `
+            <div class="${classes}">
+                <span>${day}</span>
+                ${isActive ? `<span class="activity-badge">+${activityCount}</span>` : ''}
+            </div>
+        `;
+    }
+
+    document.getElementById('calendarGridContainer').innerHTML = gridHtml;
+    renderWeeklyReport();
+}
+
+function renderWeeklyReport() {
+    const reportContainer = document.getElementById('weeklyReportContent');
+    
+    // Calcola dati ultimi 7 giorni
+    let totalWeekExercises = 0;
+    let activeDaysCount = 0;
+    let today = new Date();
+
+    for (let i = 0; i < 7; i++) {
+        let d = new Date(today);
+        d.setDate(today.getDate() - i);
+        let dateKey = d.toISOString().split('T')[0];
+        if (activityLog[dateKey]) {
+            totalWeekExercises += activityLog[dateKey];
+            activeDaysCount++;
+        }
+    }
+
+    reportContainer.innerHTML = `
+        <p style="margin: 5px 0;">✨ <strong>Attività negli ultimi 7 giorni:</strong> ${totalWeekExercises} esercizi completati.</p>
+        <p style="margin: 5px 0;">🔥 <strong>Giorni attivi questa settimana:</strong> ${activeDaysCount} su 7 giorni.</p>
+        <p style="margin: 5px 0;">🎯 <strong>Media giornaliera:</strong> ${(totalWeekExercises / 7).toFixed(1)} esercizi/giorno.</p>
+        <p style="font-size: 0.85rem; color: #7F8C8D; margin-top: 10px;">Ottimo lavoro! Continua a praticare regolarmente per mantenere alta la costanza nello studio dell'inglese.</p>
+    `;
+}
+
 function updateStatsDisplay() {
     document.getElementById('statTotalWords').innerText = dictionaryData.length;
     document.getElementById('statCompleted').innerText = globalCompletedCount;
@@ -864,7 +1026,6 @@ function updateStatsDisplay() {
     let totalErrorsCount = Object.values(errorTrackingCounts).reduce((a, b) => a + b, 0);
     document.getElementById('statTotalErrors').innerText = totalErrorsCount;
 
-    // Render Top 10 Cumulative Error Ranking
     const sortedErrors = Object.entries(errorTrackingCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
     const rankingContainer = document.getElementById('errorRankingContainer');
     
