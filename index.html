@@ -934,11 +934,11 @@ function generateWritingExercise() {
     `;
 
     if (currentWritingType === 1) {
+        // Rimosso il suggerimento della fonetica (fig) durante l'esercizio
         area.innerHTML = progressHtml + `
             <h3 style="font-size: 1rem;">✍️ Exercise: Translate to English</h3>
             <p style="font-size: 0.9rem;">Translate this Italian expression:</p>
             <h2 style="color: var(--primary); font-size: 1.2rem;">${currentWritingData.it}</h2>
-            <p><small>Pronunciation: <em>${currentWritingData.fig}</em></small></p>
             <input type="text" id="writingInput" placeholder="Type in English..." autocomplete="off">
             <br><br>
             <button class="action-btn" onclick="checkWritingAnswer()">Check Answer</button>
@@ -989,7 +989,7 @@ function registerError(wordStr) {
     errorTrackingCounts[wordStr] = (errorTrackingCounts[wordStr] || 0) + 1;
     saveUserData();
 }
-
+aa
 window.checkWritingAnswer = function() {
     const inputField = document.getElementById('writingInput');
     const input = inputField.value.trim().toLowerCase();
@@ -999,18 +999,19 @@ window.checkWritingAnswer = function() {
         practiceList.shift();
         sessionCompletedCount++;
         incrementCompletedCount();
-        feedback.innerHTML = "<strong style='color:var(--success)'>Correct! 🎉 Loading next...</strong>";
-        setTimeout(generateWritingExercise, 1000);
+        // Mostra la fonetica (fig) solo ora che hai indovinato!
+        feedback.innerHTML = `<strong style='color:var(--success)'>Correct! 🎉 (Pronunciation: <em>${currentWritingData.fig}</em>) Loading next...</strong>`;
+        setTimeout(generateWritingExercise, 1500);
     } else {
         registerError(currentWritingData.en);
         practiceList.shift();
         sessionCompletedCount++;
-        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong>. Counted in error ranking.</span>`;
-        setTimeout(generateWritingExercise, 2000);
+        feedback.innerHTML = `<span style='color:var(--danger)'>Incorrect. The correct word was: <strong>${currentWritingData.en}</strong> (Pronunciation: <em>${currentWritingData.fig}</em>). Counted in error ranking.</span>`;
+        setTimeout(generateWritingExercise, 2500);
     }
     updateStatsDisplay();
 }
-
+aa
 window.checkMatchingAnswer = function(btn, selected) {
     const feedback = document.getElementById('writingFeedback');
     if (selected === currentWritingData.en) {
