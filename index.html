@@ -777,9 +777,27 @@ function initCategorySelect() {
 }
 
 function loadDailyCards() {
-    const words = dictionaryData.filter(w => w.day === 1);
-    let html = `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Español</th><th>🇩🇰 Dansk</th></tr></thead><tbody>`;
-    words.forEach(w => {
+    // Calcola il numero del giorno dell'anno corrente (da 1 a 365)
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 0);
+    const diff = (now - startOfYear) + ((startOfYear.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    // Raggruppa tutte le parole del dizionario in blocchi da 20
+    const pageSize = 20;
+    const totalPages = Math.ceil(dictionaryData.length / pageSize) || 1;
+    
+    // Seleziona il blocco in base al giorno dell'anno (ciclando se finiscono i blocchi)
+    const currentDayIndex = (dayOfYear % totalPages) + 1;
+    
+    const startIndex = (currentDayIndex - 1) * pageSize;
+    const wordsToDisplay = dictionaryData.slice(startIndex, startIndex + pageSize);
+
+    let html = `<div class="category-title" style="margin-top:0; margin-bottom:10px;">📅 Programma del Giorno (Gruppo ${currentDayIndex})</div>`;
+    html += `<table><thead><tr><th>Inglese</th><th>Pronuncia</th><th>🇮🇹 Italiano</th><th>🇪🇸 Español</th><th>🇩🇰 Dansk</th></tr></thead><tbody>`;
+    
+    wordsToDisplay.forEach(w => {
         html += `<tr>
             <td><strong>${w.en}</strong> <button class="audio-btn" onclick="speak('${w.en}')">🔊</button></td>
             <td><em>${w.fig}</em></td>
@@ -789,9 +807,9 @@ function loadDailyCards() {
         </tr>`;
     });
     html += `</tbody></table>`;
+    
     document.getElementById('dailyTableContainer').innerHTML = html;
 }
-
 function renderRepository(words) {
     const container = document.getElementById('repoTableContainer');
     if (words.length === 0) {
