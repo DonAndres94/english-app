@@ -938,9 +938,8 @@ function generateWritingExercise() {
             <p id="writingFeedback"></p>
         `;
     } else if (currentWritingType === 2) {
-        let sentenceWithBlank = currentWritingData.sentence.includes(currentWritingData.en) ? 
-            currentWritingData.sentence.replace(currentWritingData.en, "_____") : 
-            `Complete sentence for: ${currentWritingData.en} (_____)`;
+        // Usa direttamente la frase con i trattini bassi già presenti nel dizionario
+        let sentenceWithBlank = currentWritingData.sentence;
             
         area.innerHTML = progressHtml + `
             <h3 style="font-size: 1rem;">✍️ Exercise: Complete the Sentence</h3>
