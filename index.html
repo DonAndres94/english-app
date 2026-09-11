@@ -40,10 +40,23 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             padding: 12px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 { margin: 0; font-size: 1.2rem; }
+
+        .auth-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
         nav {
             display: flex;
@@ -311,6 +324,7 @@
 <div class="app-container">
     <header>
         <h1>English Vocabulary & Skills</h1>
+        <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">Login</button>
     </header>
 
     <nav>
@@ -443,7 +457,16 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+// CONFIGURAZIONE SUPABASE AGGIORNATA
+const SUPABASE_URL = 'https://gznybcetobwhyitynnjh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_bNOFpvyTN-nCFbpBMqScLw_6k1X1e8y';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+
 const baseDictionary = [
     { day: 1, category: "Obiettivi e Successo", en: "Accomplish", fig: "a-kóm-plish", it: "Realizzare / Portare a termine", es: "Lograr / Cumplir", da: "Opnå / Udrette", sentence: "We need to ___ our main project goals this year." },
     { day: 1, category: "Finanze e Gestione", en: "Afford", fig: "a-fóord", it: "Permettersi (economicamente)", es: "Permitirse / Costear", da: "Ha råd til", sentence: "I cannot ___ to buy a brand new car right now." },
@@ -498,20 +521,89 @@ const listeningDatabase = {
     ]
 };
 
-let customAddedWords = JSON.parse(localStorage.getItem('eng_custom_dictionary')) || [];
-let dictionaryData = [...baseDictionary, ...customAddedWords];
+let customAddedWords = [];
+let dictionaryData = [...baseDictionary];
 
 let practiceList = [];
 let totalSessionTarget = 20;
 let sessionCompletedCount = 0;
-let globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
-let errorTrackingCounts = JSON.parse(localStorage.getItem('eng_error_tracking')) || {};
-let activityLog = JSON.parse(localStorage.getItem('eng_activity_log')) || {};
+let globalCompletedCount = 0;
+let errorTrackingCounts = {};
+let activityLog = {};
 
 let currentWritingType = 1;
 let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
 let calendarCurrentDate = new Date();
+
+// SINCRONIZZAZIONE CLOUD E LOCAL STORAGE
+async function loadUserData() {
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUser = user;
+
+    const authBtn = document.getElementById('authBtn');
+
+    if (currentUser) {
+        authBtn.innerText = "Logout";
+        const { data, error } = await supabase
+            .from('user_data')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (data) {
+            customAddedWords = data.custom_dictionary || [];
+            globalCompletedCount = data.completed_count || 0;
+            errorTrackingCounts = data.error_tracking || {};
+            activityLog = data.activity_log || {};
+        } else {
+            customAddedWords = JSON.parse(localStorage.getItem('eng_custom_dictionary')) || [];
+            globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
+            errorTrackingCounts = JSON.parse(localStorage.getItem('eng_error_tracking')) || {};
+            activityLog = JSON.parse(localStorage.getItem('eng_activity_log')) || {};
+            await saveUserData();
+        }
+    } else {
+        authBtn.innerText = "Login";
+        customAddedWords = JSON.parse(localStorage.getItem('eng_custom_dictionary')) || [];
+        globalCompletedCount = parseInt(localStorage.getItem('eng_completed_count')) || 0;
+        errorTrackingCounts = JSON.parse(localStorage.getItem('eng_error_tracking')) || {};
+        activityLog = JSON.parse(localStorage.getItem('eng_activity_log')) || {};
+    }
+
+    dictionaryData = [...baseDictionary, ...customAddedWords];
+    initApp();
+}
+
+async function saveUserData() {
+    localStorage.setItem('eng_custom_dictionary', JSON.stringify(customAddedWords));
+    localStorage.setItem('eng_completed_count', globalCompletedCount);
+    localStorage.setItem('eng_error_tracking', JSON.stringify(errorTrackingCounts));
+    localStorage.setItem('eng_activity_log', JSON.stringify(activityLog));
+
+    if (currentUser) {
+        await supabase.from('user_data').upsert({
+            user_id: currentUser.id,
+            custom_dictionary: customAddedWords,
+            completed_count: globalCompletedCount,
+            error_tracking: errorTrackingCounts,
+            activity_log: activityLog,
+            updated_at: new Date()
+        });
+    }
+}
+
+window.handleAuthAction = async function() {
+    if (!currentUser) {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google'
+        });
+        if (error) alert("Errore durante il login: " + error.message);
+    } else {
+        await supabase.auth.signOut();
+        window.location.reload();
+    }
+}
 
 function initApp() {
     initCategorySelect();
@@ -525,11 +617,11 @@ function initApp() {
 function recordTodayActivity(count = 1) {
     const todayStr = new Date().toISOString().split('T')[0];
     activityLog[todayStr] = (activityLog[todayStr] || 0) + count;
-    localStorage.setItem('eng_activity_log', JSON.stringify(activityLog));
+    saveUserData();
     renderCalendar();
 }
 
-function toggleWritingMode() {
+window.toggleWritingMode = function() {
     const mode = document.getElementById('writingModeSelect').value;
     const practiceControls = document.getElementById('practiceControls');
     const area = document.getElementById('writingArea');
@@ -565,16 +657,12 @@ function toggleWritingMode() {
     }
 }
 
-function updateEssayCharCount(minChars) {
+window.updateEssayCharCount = function(minChars) {
     const text = document.getElementById('essayInput').value;
     const count = text.length;
     const counterEl = document.getElementById('charCounter');
     counterEl.innerText = count;
-    if (count >= minChars) {
-        counterEl.style.color = "var(--success)";
-    } else {
-        counterEl.style.color = "var(--danger)";
-    }
+    counterEl.style.color = count >= minChars ? "var(--success)" : "var(--danger)";
 }
 
 function startErrorReviewSession() {
@@ -596,7 +684,7 @@ function startErrorReviewSession() {
     generateWritingExercise();
 }
 
-function submitEssayForCorrection(minChars) {
+window.submitEssayForCorrection = function(minChars) {
     const text = document.getElementById('essayInput').value.trim();
     const feedback = document.getElementById('essayFeedback');
     
@@ -641,7 +729,6 @@ function submitEssayForCorrection(minChars) {
                 };
                 customAddedWords.push(newEntry);
                 dictionaryData.push(newEntry);
-                localStorage.setItem('eng_custom_dictionary', JSON.stringify(customAddedWords));
                 
                 const li = document.createElement('li');
                 li.innerHTML = `Added new word: <strong>${cleanWord}</strong> to Dictionary!`;
@@ -657,28 +744,21 @@ function submitEssayForCorrection(minChars) {
         listEl.appendChild(li);
     }
 
+    saveUserData();
     recordTodayActivity(3);
     renderRepository(dictionaryData);
     updateStatsDisplay();
 }
 
-function restartWritingSession() {
+window.restartWritingSession = function() {
     const selectVal = document.getElementById('sessionSizeSelect').value;
-    if (selectVal === 'all') {
-        totalSessionTarget = dictionaryData.length;
-    } else {
-        totalSessionTarget = parseInt(selectVal);
-    }
+    totalSessionTarget = selectVal === 'all' ? dictionaryData.length : parseInt(selectVal);
 
     sessionCompletedCount = 0;
     let shuffled = [...dictionaryData].sort(() => Math.random() - 0.5);
     
-    if (shuffled.length > totalSessionTarget) {
-        practiceList = shuffled.slice(0, totalSessionTarget);
-    } else {
-        practiceList = shuffled;
-        totalSessionTarget = practiceList.length;
-    }
+    practiceList = shuffled.length > totalSessionTarget ? shuffled.slice(0, totalSessionTarget) : shuffled;
+    totalSessionTarget = practiceList.length;
 
     generateWritingExercise();
     updateStatsDisplay();
@@ -750,7 +830,7 @@ function renderRepository(words) {
     container.innerHTML = html;
 }
 
-function filterRepository() {
+window.filterRepository = function() {
     const search = document.getElementById('searchInput').value.toLowerCase().trim();
     const selectedCategory = document.getElementById('categorySelect').value;
 
@@ -767,13 +847,13 @@ function filterRepository() {
     renderRepository(filtered);
 }
 
-function speak(text) {
+window.speak = function(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
     window.speechSynthesis.speak(utterance);
 }
 
-function switchTab(tabId, event) {
+window.switchTab = function(tabId, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
@@ -868,16 +948,16 @@ function generateWritingExercise() {
 
 function incrementCompletedCount() {
     globalCompletedCount++;
-    localStorage.setItem('eng_completed_count', globalCompletedCount);
+    saveUserData();
     recordTodayActivity(1);
 }
 
 function registerError(wordStr) {
     errorTrackingCounts[wordStr] = (errorTrackingCounts[wordStr] || 0) + 1;
-    localStorage.setItem('eng_error_tracking', JSON.stringify(errorTrackingCounts));
+    saveUserData();
 }
 
-function checkWritingAnswer() {
+window.checkWritingAnswer = function() {
     const inputField = document.getElementById('writingInput');
     const input = inputField.value.trim().toLowerCase();
     const feedback = document.getElementById('writingFeedback');
@@ -898,7 +978,7 @@ function checkWritingAnswer() {
     updateStatsDisplay();
 }
 
-function checkMatchingAnswer(btn, selected) {
+window.checkMatchingAnswer = function(btn, selected) {
     const feedback = document.getElementById('writingFeedback');
     if (selected === currentWritingData.en) {
         btn.classList.add('correct');
@@ -938,11 +1018,11 @@ function loadListeningExercise() {
     document.getElementById('listeningFeedback').innerHTML = "";
 }
 
-function changeListeningCategory() {
+window.changeListeningCategory = function() {
     loadListeningExercise();
 }
 
-function nextVideoInCategory() {
+window.nextVideoInCategory = function() {
     const category = document.getElementById('listeningCategorySelect').value;
     const videoList = listeningDatabase[category];
     
@@ -950,7 +1030,7 @@ function nextVideoInCategory() {
     loadListeningExercise();
 }
 
-function checkListeningAnswers() {
+window.checkListeningAnswers = function() {
     const inputs = document.querySelectorAll('#listeningSentencesContainer .blank-input');
     const feedback = document.getElementById('listeningFeedback');
     let correct = true;
@@ -977,7 +1057,7 @@ function checkListeningAnswers() {
 }
 
 // CALENDAR & REPORT FUNCTIONS
-function changeMonth(direction) {
+window.changeMonth = function(direction) {
     calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + direction);
     renderCalendar();
 }
@@ -1088,7 +1168,8 @@ function updateStatsDisplay() {
     }
 }
 
-initApp();
+// Avvio del caricamento dei dati all'apertura della pagina
+loadUserData();
 </script>
 </body>
 </html>
