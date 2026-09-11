@@ -528,7 +528,6 @@ const listeningDatabase = {
 let customAddedWords = [];
 let dictionaryData = [...baseDictionary];
 
-// Variabili per la gestione del Daily Program rotativo
 let currentDailyWords = [];
 let lastDailyDate = "";
 
@@ -544,7 +543,6 @@ let currentWritingData = null;
 let currentVideoIndexes = { music: 0, documentary: 0, podcast: 0 };
 let calendarCurrentDate = new Date();
 
-// SINCRONIZZAZIONE CLOUD E LOCAL STORAGE
 async function loadUserData() {
     const { data: { user } } = await supabase.auth.getUser();
     currentUser = user;
@@ -639,14 +637,10 @@ function recordTodayActivity(count = 1) {
     renderCalendar();
 }
 
-// GESTIONE ROTAZIONE GIORNALIERA DELLE 20 PAROLE "DAY"
 function loadDailyCards() {
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Se è un nuovo giorno (o non sono mai state impostate), estraiamo 20 nuove parole
     if (lastDailyDate !== todayStr || currentDailyWords.length === 0) {
-        // Prendiamo l'intero dizionario escludendo quelle eventualmente già mostrate di recente se vogliamo, 
-        // oppure prendiamo 20 parole casuali dall'intero dizionario che non siano duplicate nel gruppo odierno.
         let pool = [...dictionaryData];
         pool.sort(() => Math.random() - 0.5);
         
@@ -934,7 +928,6 @@ function generateWritingExercise() {
     `;
 
     if (currentWritingType === 1) {
-        // Rimosso il suggerimento della fonetica (fig) durante l'esercizio
         area.innerHTML = progressHtml + `
             <h3 style="font-size: 1rem;">✍️ Exercise: Translate to English</h3>
             <p style="font-size: 0.9rem;">Translate this Italian expression:</p>
@@ -989,7 +982,7 @@ function registerError(wordStr) {
     errorTrackingCounts[wordStr] = (errorTrackingCounts[wordStr] || 0) + 1;
     saveUserData();
 }
-aa
+
 window.checkWritingAnswer = function() {
     const inputField = document.getElementById('writingInput');
     const input = inputField.value.trim().toLowerCase();
@@ -999,7 +992,6 @@ window.checkWritingAnswer = function() {
         practiceList.shift();
         sessionCompletedCount++;
         incrementCompletedCount();
-        // Mostra la fonetica (fig) solo ora che hai indovinato!
         feedback.innerHTML = `<strong style='color:var(--success)'>Correct! 🎉 (Pronunciation: <em>${currentWritingData.fig}</em>) Loading next...</strong>`;
         setTimeout(generateWritingExercise, 1500);
     } else {
@@ -1011,7 +1003,7 @@ window.checkWritingAnswer = function() {
     }
     updateStatsDisplay();
 }
-aa
+
 window.checkMatchingAnswer = function(btn, selected) {
     const feedback = document.getElementById('writingFeedback');
     if (selected === currentWritingData.en) {
@@ -1090,7 +1082,6 @@ window.checkListeningAnswers = function() {
     updateStatsDisplay();
 }
 
-// CALENDAR & REPORT FUNCTIONS
 window.changeMonth = function(direction) {
     calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + direction);
     renderCalendar();
@@ -1202,7 +1193,6 @@ function updateStatsDisplay() {
     }
 }
 
-// Avvio del caricamento dei dati all'apertura della pagina
 loadUserData();
 </script>
 </body>
